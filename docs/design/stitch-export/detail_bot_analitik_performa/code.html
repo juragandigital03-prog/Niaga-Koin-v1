@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>GAIN - Niaga Koin Terminal</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#181c24", "secondary-fixed-dim": "#7bd0ff", "on-background": "#dfe2ee", "secondary": "#7bd0ff", "on-secondary-container": "#00374d", "primary-container": "#3198dc", "surface-dim": "#0f131c", "tertiary-container": "#7c87f3", "surface": "#0f131c", "surface-bright": "#353942", "on-secondary-fixed-variant": "#004c69", "surface-container-high": "#262a33", "on-primary-fixed-variant": "#004b73", "on-primary-container": "#002c47", "on-primary-fixed": "#001d31", "error": "#ffb4ab", "outline-variant": "#3f4850", "on-error-container": "#ffdad6", "on-primary": "#003351", "on-tertiary": "#131e8c", "primary-fixed-dim": "#93ccff", "on-tertiary-fixed-variant": "#2f3aa3", "inverse-on-surface": "#2c3039", "on-surface-variant": "#bfc7d2", "tertiary-fixed": "#e0e0ff", "surface-container-highest": "#31353e", "outline": "#89929b", "secondary-container": "#00a6e0", "tertiary": "#bdc2ff", "on-error": "#690005", "on-secondary": "#00354a", "on-surface": "#dfe2ee", "inverse-surface": "#dfe2ee", "error-container": "#93000a", "secondary-fixed": "#c4e7ff", "on-tertiary-fixed": "#000767", "background": "#0f131c", "tertiary-fixed-dim": "#bdc2ff", "surface-container-lowest": "#0a0e16", "primary": "#93ccff", "surface-tint": "#93ccff", "inverse-primary": "#006398", "on-tertiary-container": "#081486", "on-secondary-fixed": "#001e2c", "surface-container": "#1c2028", "surface-variant": "#31353e", "primary-fixed": "#cce5ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-mobile": "0.75rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-dense": "0.5rem", "margin": "1.5rem" }, fontFamily: { "body-lg": ["Inter"], "ticker-lg": ["JetBrains Mono"], "headline-md": ["Inter"], "label-caps": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "ticker-xl": ["JetBrains Mono"], "headline-lg": ["Inter"], "ticker-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "ticker-md": ["JetBrains Mono"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "ticker-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }], "label-caps": ["11px", { lineHeight: "14px", fontWeight: "600" }], "headline-lg-mobile": ["22px", { lineHeight: "30px", fontWeight: "600" }], "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "ticker-xl": ["32px", { lineHeight: "40px", fontWeight: "700" }], "headline-lg": ["30px", { lineHeight: "38px", fontWeight: "600" }], "ticker-sm": ["11px", { lineHeight: "14px", fontWeight: "500" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "ticker-md": ["14px", { lineHeight: "20px", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#0f131c;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 5rem);}.pt-safe{padding-top:env(safe-area-inset-top, 0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-xs"><div class="flex items-center gap-space-xs min-w-0 flex-shrink-0"><img alt="GAIN Monogram Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1eclB7tX9CuaySQk92XyTdqK6y8r6eBDaYKc2BVkmdsmTPtaNFJBmzjRkaLctl5Hx9I1WxKXfAIxWk8nD_rrfP4PQNgDqQF0T0rgvyWaYF-o4o2c70MzKq-jEf3IllZemg7SeVWyc-WyBPtl6GkI6zDCm9EmGtB-SRlYhPO3KmlaQxI2XkS_iPqLboUgdsevBEiN0T3IkbocrFM7Bl40hGndlBu5StDAgt1YnI7EKkgKDXYvvTqx"/><div class="flex flex-col justify-center select-none"><span class="font-headline-md text-headline-md tracking-tight text-on-surface leading-none font-bold">GAIN</span><span class="font-ticker-sm text-ticker-sm text-primary tracking-widest leading-tight uppercase font-medium">NIAGA KOIN</span></div></div><div class="flex items-center gap-space-xs flex-1 justify-center px-space-xs overflow-hidden"><div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-high/80 backdrop-blur-md"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-ticker-sm text-ticker-sm text-tertiary font-semibold tracking-wide whitespace-nowrap">PAPER</span><span class="hidden sm:inline font-ticker-sm text-ticker-sm text-on-surface-variant font-normal">12ms</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Notifikasi Sistem" class="w-11 h-11 relative rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface active:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full px-margin-mobile pb-space-lg space-y-space-md">
+<!-- Breadcrumb & Sub-Header Navigation -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<div class="flex items-center justify-between gap-space-xs">
+<a class="inline-flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors min-h-[44px]" href="#">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span class="font-body-sm text-body-sm font-medium">Kembali ke Daftar Bot</span>
+</a>
+<!-- Quick Action Utility Icons (Min touch target 44px) -->
+<div class="flex items-center gap-1">
+<button aria-label="Jeda atau Lanjutkan Bot" class="w-11 h-11 flex items-center justify-center rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 transition-all text-on-surface" id="btn-toggle-pause" type="button">
+<span class="material-symbols-outlined text-[20px] text-secondary" id="icon-toggle-state">pause</span>
+</button>
+<button aria-label="Ubah Parameter Strategi" class="w-11 h-11 flex items-center justify-center rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 transition-all text-on-surface" type="button">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">tune</span>
+</button>
+<button aria-label="Menu Opsi Lainnya" class="w-11 h-11 flex items-center justify-center rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 transition-all text-on-surface" type="button">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Status & Identification Strip -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Status Badge -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span class="font-ticker-sm text-ticker-sm text-secondary tracking-wider font-semibold" id="badge-status-text">RUNNING</span>
+</div>
+<!-- Simulation Badge -->
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-tertiary">
+<span class="material-symbols-outlined text-[13px]">science</span>
+<span class="font-ticker-sm text-ticker-sm tracking-wider">PAPER SIMULASI</span>
+</div>
+<!-- Market Pair Pill -->
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest text-on-surface-variant">
+<span class="font-ticker-sm text-ticker-sm">Binance · BTC/USDT · 15m</span>
+</div>
+</div>
+</div>
+<!-- Hero Bot Header & Live Performance Card -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-space-md shadow-md space-y-space-md">
+<div class="flex items-start justify-between">
+<div class="space-y-0.5">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-semibold tracking-tight">BTC Trend Scalper v2</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">RSI Reversal + EMA 20/50 Dynamic Cross</p>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">smart_toy</span>
+</div>
+</div>
+<!-- Main PnL Value -->
+<div class="flex items-baseline justify-between pt-1">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total PnL Terakumulasi</p>
+<div class="flex items-baseline gap-2 mt-0.5">
+<span class="font-ticker-xl text-ticker-xl text-secondary font-bold tracking-tight">+284.20 <span class="font-ticker-sm text-ticker-sm text-on-surface-variant">USDT</span></span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold">
+            +56.84%
+          </span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Modal Aktif</p>
+<p class="font-ticker-lg text-ticker-lg text-on-surface font-semibold mt-0.5">500.00 <span class="font-ticker-sm text-ticker-sm text-on-surface-variant">USDT</span></p>
+</div>
+</div>
+<!-- Quick Performance Bento Grid -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs">
+<div class="rounded-lg bg-surface-container-low p-2.5 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Win Rate</span>
+<div class="mt-1">
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold">77.8%</span>
+<span class="font-ticker-sm text-ticker-sm text-secondary ml-1 font-medium">(14/18)</span>
+</div>
+</div>
+<div class="rounded-lg bg-surface-container-low p-2.5 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Max Drawdown</span>
+<div class="mt-1">
+<span class="font-ticker-md text-ticker-md text-error font-semibold">-1.15%</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant ml-1">Limit: -4%</span>
+</div>
+</div>
+<div class="rounded-lg bg-surface-container-low p-2.5 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Profit Factor</span>
+<div class="mt-1">
+<span class="font-ticker-md text-ticker-md text-primary font-semibold">2.42</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant ml-1">Kuat</span>
+</div>
+</div>
+<div class="rounded-lg bg-surface-container-low p-2.5 flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Durasi Operasi</span>
+<div class="mt-1">
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold">4h 18m</span>
+<span class="font-ticker-sm text-ticker-sm text-secondary ml-1">Aktif</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Performance Visual Curve Chart (Interactive SVG) -->
+<div class="rounded-xl bg-surface-container p-space-md shadow-md space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">show_chart</span>
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Kurva Ekuitas</span>
+</div>
+<!-- Timeframe Toggle Filter -->
+<div class="flex items-center bg-surface-container-low p-0.5 rounded-lg">
+<button class="px-2.5 py-1 rounded font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface" type="button">24J</button>
+<button class="px-2.5 py-1 rounded bg-primary-container text-on-primary-container font-label-caps text-label-caps font-semibold" type="button">7H</button>
+<button class="px-2.5 py-1 rounded font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface" type="button">30H</button>
+<button class="px-2.5 py-1 rounded font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface" type="button">Semua</button>
+</div>
+</div>
+<!-- SVG Equity Curve Graph -->
+<div class="relative w-full h-44 mt-2">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 340 160">
+<defs>
+<lineargradient id="equityGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#7bd0ff" stop-opacity="0.35"></stop>
+<stop offset="65%" stop-color="#3198dc" stop-opacity="0.08"></stop>
+<stop offset="100%" stop-color="#0f131c" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Horizontal Reference Gridlines -->
+<line opacity="0.4" stroke="#31353e" stroke-dasharray="3 3" x1="0" x2="340" y1="30" y2="30"></line>
+<line opacity="0.4" stroke="#31353e" stroke-dasharray="3 3" x1="0" x2="340" y1="75" y2="75"></line>
+<line opacity="0.6" stroke="#3f4850" stroke-dasharray="2 2" x1="0" x2="340" y1="120" y2="120"></line>
+<!-- Baseline Label (500 USDT) -->
+<text fill="#89929b" font-family="JetBrains Mono" font-size="9" x="6" y="116">Modal: 500.00 USDT</text>
+<text fill="#7bd0ff" font-family="JetBrains Mono" font-size="9" x="6" y="26">Puncak: 784.20 USDT</text>
+<!-- Shaded Area Under Curve -->
+<polygon fill="url(#equityGradient)" points="0,120 18,118 42,122 75,104 110,108 145,86 175,92 210,64 245,68 280,42 315,35 340,32 340,150 0,150"></polygon>
+<!-- Smooth Primary Trajectory Path -->
+<path d="M0,120 Q30,121 42,122 T75,104 T110,108 T145,86 T175,92 T210,64 T245,68 T280,42 T315,35 L340,32" fill="none" stroke="#7bd0ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<!-- Peak Point Marker (Interactive Glow) -->
+<circle cx="340" cy="32" fill="#7bd0ff" r="4.5" stroke="#0f131c" stroke-width="2"></circle>
+<circle class="animate-pulse" cx="340" cy="32" fill="#7bd0ff" opacity="0.25" r="9"></circle>
+</svg>
+<!-- Float Badge Marker -->
+<div class="absolute top-1 right-1 rounded-md bg-surface-container-high px-2 py-1 shadow-md pointer-events-none">
+<span class="font-ticker-sm text-ticker-sm text-secondary font-bold">+284.20 USDT</span>
+</div>
+</div>
+<!-- Trend Analytics Ratio Strip -->
+<div class="flex items-center justify-between pt-2 px-1 bg-surface-container-low rounded-lg p-2 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-body-sm text-body-sm">Avg Win: <strong class="text-on-surface font-ticker-sm">+24.80 USDT</strong></span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-body-sm text-body-sm">Avg Loss: <strong class="text-on-surface font-ticker-sm">-8.10 USDT</strong></span>
+</div>
+</div>
+</div>
+<!-- Live Active Position & Risk Engine Status -->
+<div class="rounded-xl bg-surface-container p-space-md shadow-md space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded font-ticker-sm text-ticker-sm font-bold bg-primary-container text-on-primary-container">
+          LONG BTC/USDT
+        </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Posisi #19</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-secondary">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+<span class="font-label-caps text-label-caps font-semibold">RISK-001 AKTIF</span>
+</div>
+</div>
+<!-- Position Pricing Bento Rows -->
+<div class="rounded-lg bg-surface-container-low p-space-sm space-y-2">
+<div class="flex justify-between items-center text-on-surface-variant font-body-sm text-body-sm">
+<span>Harga Beli (Entry)</span>
+<span class="font-ticker-md text-ticker-md text-on-surface font-medium">$64,120.00</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant font-body-sm text-body-sm">
+<span>Harga Saat Ini</span>
+<div class="flex items-center gap-1.5">
+<span class="font-ticker-md text-ticker-md text-secondary font-bold">$64,780.00</span>
+<span class="font-ticker-sm text-ticker-sm text-secondary">(+1.03%)</span>
+</div>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant font-body-sm text-body-sm">
+<span>Ukuran Kontrak</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface">0.0078 BTC (~500.00 USDT)</span>
+</div>
+</div>
+<!-- Dynamic SL / TP Guardrail Visualizer -->
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="rounded-lg bg-surface-container-low p-2">
+<div class="flex items-center gap-1 text-error mb-1">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span class="font-label-caps text-label-caps">Trailing Stop-Loss</span>
+</div>
+<p class="font-ticker-md text-ticker-md text-on-surface font-semibold">$63,150.00</p>
+<p class="font-ticker-sm text-ticker-sm text-error">-1.51% batas proteksi</p>
+</div>
+<div class="rounded-lg bg-surface-container-low p-2">
+<div class="flex items-center gap-1 text-secondary mb-1">
+<span class="material-symbols-outlined text-[14px]">flag</span>
+<span class="font-label-caps text-label-caps">Take-Profit Target</span>
+</div>
+<p class="font-ticker-md text-ticker-md text-on-surface font-semibold">$65,720.00</p>
+<p class="font-ticker-sm text-ticker-sm text-secondary">+2.50% target koin</p>
+</div>
+</div>
+</div>
+<!-- Strategy Parameters Quick View (Collapsible Micro-Interaction) -->
+<div class="rounded-xl bg-surface-container shadow-md overflow-hidden">
+<button class="w-full min-h-[44px] px-space-md py-space-sm flex items-center justify-between text-left hover:bg-surface-container-high transition-colors" id="btn-accordion-params" type="button">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">tune</span>
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Parameter Strategi Aktif</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant transition-transform duration-200" id="icon-chevron-params">expand_more</span>
+</button>
+<div class="px-space-md pb-space-md space-y-space-xs" id="content-params">
+<div class="flex flex-wrap gap-1.5 pt-1">
+<span class="px-2.5 py-1 rounded bg-surface-container-low font-ticker-sm text-ticker-sm text-on-surface">RSI Period: <strong>14</strong></span>
+<span class="px-2.5 py-1 rounded bg-surface-container-low font-ticker-sm text-ticker-sm text-on-surface">Oversold: <strong>≤30</strong></span>
+<span class="px-2.5 py-1 rounded bg-surface-container-low font-ticker-sm text-ticker-sm text-on-surface">Overbought: <strong>≥70</strong></span>
+<span class="px-2.5 py-1 rounded bg-surface-container-low font-ticker-sm text-ticker-sm text-on-surface">EMA Crossover: <strong>20 / 50</strong></span>
+<span class="px-2.5 py-1 rounded bg-surface-container-low font-ticker-sm text-ticker-sm text-error">Circuit Breaker: <strong>3 Loss berturut-turut</strong></span>
+<span class="px-2.5 py-1 rounded bg-surface-container-low font-ticker-sm text-ticker-sm text-tertiary">Cooldown: <strong>60 menit</strong></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant pt-1">
+        Konfigurasi divalidasi sesuai modul risk containment SDD 5.4. Trailing stop otomatis terpasang saat ekuitas mencapai +1.5%.
+      </p>
+</div>
+</div>
+<!-- Real-Time Execution Timeline & Audit Log -->
+<div class="rounded-xl bg-surface-container p-space-md shadow-md space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">history</span>
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Log Eksekusi &amp; Sinyal</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-ticker-sm text-ticker-sm text-on-surface-variant">18 Order</span>
+</div>
+<!-- Feed List -->
+<div class="space-y-space-xs pt-1">
+<!-- Execution 1: SELL (Take-Profit) -->
+<div class="rounded-lg bg-surface-container-low p-2.5 flex items-start justify-between">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-secondary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">sell</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-ticker-md text-ticker-md font-bold text-secondary">SELL</span>
+<span class="font-body-sm text-body-sm text-on-surface">Take-Profit Tercapai</span>
+</div>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant mt-0.5">Closed @ $64,950.00 · Slippage 0.02%</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-ticker-md text-ticker-md font-semibold text-secondary">+24.50 USDT</span>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant">25m lalu</p>
+</div>
+</div>
+<!-- Execution 2: BUY (Entry Triggered) -->
+<div class="rounded-lg bg-surface-container-low p-2.5 flex items-start justify-between">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-ticker-md text-ticker-md font-bold text-primary">BUY</span>
+<span class="font-body-sm text-body-sm text-on-surface">Sinyal RSI Reversal (28.4)</span>
+</div>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant mt-0.5">Filled @ $64,120.00 · Fee 0.075 USDT</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-ticker-sm text-ticker-sm font-medium text-on-surface">Vol 250 USDT</span>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant">3j lalu</p>
+</div>
+</div>
+<!-- Execution 3: SELL (Take-Profit) -->
+<div class="rounded-lg bg-surface-container-low p-2.5 flex items-start justify-between">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-secondary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">sell</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-ticker-md text-ticker-md font-bold text-secondary">SELL</span>
+<span class="font-body-sm text-body-sm text-on-surface">Target TP1 Selesai</span>
+</div>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant mt-0.5">Closed @ $63,800.00 · Vol 250 USDT</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-ticker-md text-ticker-md font-semibold text-secondary">+31.20 USDT</span>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant">5j lalu</p>
+</div>
+</div>
+<!-- Execution 4: BUY (Entry Initial) -->
+<div class="rounded-lg bg-surface-container-low p-2.5 flex items-start justify-between">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-ticker-md text-ticker-md font-bold text-primary">BUY</span>
+<span class="font-body-sm text-body-sm text-on-surface">Cross EMA 20/50 Bullish</span>
+</div>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant mt-0.5">Filled @ $62,900.00 · Paper Match</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-ticker-sm text-ticker-sm font-medium text-on-surface">Vol 250 USDT</span>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant">8j lalu</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Operational Execution Action Buttons -->
+<div class="sticky bottom-2 z-20 pt-space-xs bg-surface/90 backdrop-blur-md">
+<div class="grid grid-cols-2 gap-space-xs">
+<button class="w-full min-h-[44px] py-2.5 px-3 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-bright active:scale-98 transition-all flex items-center justify-center gap-1.5 font-body-md text-body-md font-semibold shadow-md" id="btn-pause-action" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">pause_circle</span>
+<span>Jeda Bot</span>
+</button>
+<button class="w-full min-h-[44px] py-2.5 px-3 rounded-lg bg-error-container text-on-error-container hover:opacity-90 active:scale-98 transition-all flex items-center justify-center gap-1.5 font-body-md text-body-md font-semibold shadow-md" id="btn-stop-action" type="button">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+<span>Tutup &amp; Hentikan</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interaction handlers
+  (function() {
+    // Accordion expand/collapse
+    const accordionBtn = document.getElementById('btn-accordion-params');
+    const accordionContent = document.getElementById('content-params');
+    const accordionIcon = document.getElementById('icon-chevron-params');
+
+    if (accordionBtn && accordionContent && accordionIcon) {
+      accordionBtn.addEventListener('click', function() {
+        const isHidden = accordionContent.classList.toggle('hidden');
+        accordionIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+      // Set initial state open
+      accordionIcon.style.transform = 'rotate(180deg)';
+    }
+
+    // Interactive Pause / Resume state toggle
+    let isPaused = false;
+    const toggleBtn = document.getElementById('btn-toggle-pause');
+    const pauseActionBtn = document.getElementById('btn-pause-action');
+    const iconToggle = document.getElementById('icon-toggle-state');
+    const badgeStatus = document.getElementById('badge-status-text');
+
+    function toggleBotRunningState() {
+      isPaused = !isPaused;
+      if (isPaused) {
+        if (badgeStatus) {
+          badgeStatus.textContent = 'PAUSED';
+          badgeStatus.className = 'font-ticker-sm text-ticker-sm text-error tracking-wider font-semibold';
+        }
+        if (iconToggle) {
+          iconToggle.textContent = 'play_arrow';
+        }
+        if (pauseActionBtn) {
+          pauseActionBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-secondary">play_circle</span><span>Lanjutkan Bot</span>';
+        }
+      } else {
+        if (badgeStatus) {
+          badgeStatus.textContent = 'RUNNING';
+          badgeStatus.className = 'font-ticker-sm text-ticker-sm text-secondary tracking-wider font-semibold';
+        }
+        if (iconToggle) {
+          iconToggle.textContent = 'pause';
+        }
+        if (pauseActionBtn) {
+          pauseActionBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-secondary">pause_circle</span><span>Jeda Bot</span>';
+        }
+      }
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleBotRunningState);
+    if (pauseActionBtn) pauseActionBtn.addEventListener('click', toggleBotRunningState);
+
+    // Stop and liquidating prompt micro-interaction
+    const stopActionBtn = document.getElementById('btn-stop-action');
+    if (stopActionBtn) {
+      stopActionBtn.addEventListener('click', function() {
+        if (confirm('Konfirmasi Tutup Posisi & Hentikan Bot?\nSemua order aktif BTC/USDT akan dilikuidasi ke USDT berdasarkan harga pasar Paper Trading.')) {
+          alert('Bot dihentikan. Posisi terbuka telah ditutup pada nilai kalkulasi terbaik.');
+          if (badgeStatus) {
+            badgeStatus.textContent = 'STOPPED';
+            badgeStatus.className = 'font-ticker-sm text-ticker-sm text-on-surface-variant tracking-wider font-semibold';
+          }
+        }
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.3)]" data-active-classes="text-secondary"><div class="h-16 px-space-xs flex items-center justify-around"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">space_dashboard</span><span class="font-label-caps text-label-caps">Beranda</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pasar" href="#"><span class="material-symbols-outlined text-[22px]">candlestick_chart</span><span class="font-label-caps text-label-caps">Pasar</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="bot-trading" href="#"><span class="material-symbols-outlined text-[22px]">smart_toy</span><span class="font-label-caps text-label-caps">Bot</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="portofolio" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-caps text-label-caps">Portofolio</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pengaturan" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-caps text-label-caps">Akun</span></a></div></nav></body></html>

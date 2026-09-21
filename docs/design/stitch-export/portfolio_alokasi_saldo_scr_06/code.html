@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>GAIN - Niaga Koin Terminal</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#181c24", "secondary-fixed-dim": "#7bd0ff", "on-background": "#dfe2ee", "secondary": "#7bd0ff", "on-secondary-container": "#00374d", "primary-container": "#3198dc", "surface-dim": "#0f131c", "tertiary-container": "#7c87f3", "surface": "#0f131c", "surface-bright": "#353942", "on-secondary-fixed-variant": "#004c69", "surface-container-high": "#262a33", "on-primary-fixed-variant": "#004b73", "on-primary-container": "#002c47", "on-primary-fixed": "#001d31", "error": "#ffb4ab", "outline-variant": "#3f4850", "on-error-container": "#ffdad6", "on-primary": "#003351", "on-tertiary": "#131e8c", "primary-fixed-dim": "#93ccff", "on-tertiary-fixed-variant": "#2f3aa3", "inverse-on-surface": "#2c3039", "on-surface-variant": "#bfc7d2", "tertiary-fixed": "#e0e0ff", "surface-container-highest": "#31353e", "outline": "#89929b", "secondary-container": "#00a6e0", "tertiary": "#bdc2ff", "on-error": "#690005", "on-secondary": "#00354a", "on-surface": "#dfe2ee", "inverse-surface": "#dfe2ee", "error-container": "#93000a", "secondary-fixed": "#c4e7ff", "on-tertiary-fixed": "#000767", "background": "#0f131c", "tertiary-fixed-dim": "#bdc2ff", "surface-container-lowest": "#0a0e16", "primary": "#93ccff", "surface-tint": "#93ccff", "inverse-primary": "#006398", "on-tertiary-container": "#081486", "on-secondary-fixed": "#001e2c", "surface-container": "#1c2028", "surface-variant": "#31353e", "primary-fixed": "#cce5ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-mobile": "0.75rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-dense": "0.5rem", "margin": "1.5rem" }, fontFamily: { "body-lg": ["Inter"], "ticker-lg": ["JetBrains Mono"], "headline-md": ["Inter"], "label-caps": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "ticker-xl": ["JetBrains Mono"], "headline-lg": ["Inter"], "ticker-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "ticker-md": ["JetBrains Mono"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "ticker-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }], "label-caps": ["11px", { lineHeight: "14px", fontWeight: "600" }], "headline-lg-mobile": ["22px", { lineHeight: "30px", fontWeight: "600" }], "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "ticker-xl": ["32px", { lineHeight: "40px", fontWeight: "700" }], "headline-lg": ["30px", { lineHeight: "38px", fontWeight: "600" }], "ticker-sm": ["11px", { lineHeight: "14px", fontWeight: "500" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "ticker-md": ["14px", { lineHeight: "20px", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#0f131c;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 5rem);}.pt-safe{padding-top:env(safe-area-inset-top, 0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-xs"><div class="flex items-center gap-space-xs min-w-0 flex-shrink-0"><img alt="GAIN Monogram Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1eclB7tX9CuaySQk92XyTdqK6y8r6eBDaYKc2BVkmdsmTPtaNFJBmzjRkaLctl5Hx9I1WxKXfAIxWk8nD_rrfP4PQNgDqQF0T0rgvyWaYF-o4o2c70MzKq-jEf3IllZemg7SeVWyc-WyBPtl6GkI6zDCm9EmGtB-SRlYhPO3KmlaQxI2XkS_iPqLboUgdsevBEiN0T3IkbocrFM7Bl40hGndlBu5StDAgt1YnI7EKkgKDXYvvTqx"/><div class="flex flex-col justify-center select-none"><span class="font-headline-md text-headline-md tracking-tight text-on-surface leading-none font-bold">GAIN</span><span class="font-ticker-sm text-ticker-sm text-primary tracking-widest leading-tight uppercase font-medium">NIAGA KOIN</span></div></div><div class="flex items-center gap-space-xs flex-1 justify-center px-space-xs overflow-hidden"><div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-high/80 backdrop-blur-md"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-ticker-sm text-ticker-sm text-tertiary font-semibold tracking-wide whitespace-nowrap">PAPER</span><span class="hidden sm:inline font-ticker-sm text-ticker-sm text-on-surface-variant font-normal">12ms</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Notifikasi Sistem" class="w-11 h-11 relative rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface active:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-10">
+<!-- PAPER TRADING RUNTIME BANNER (FR-PAPER-001) -->
+<div class="px-margin-mobile pt-3 pb-1">
+<div class="rounded-xl bg-tertiary-container/15 px-3.5 py-2.5 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="relative flex h-2.5 w-2.5 flex-shrink-0">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-tertiary"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-ticker-sm text-ticker-sm text-tertiary tracking-wider font-semibold uppercase">MODE SIMULASI (PAPER)</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-ticker-sm text-[10px] tracking-tight">FR-PAPER-001</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant/90 truncate">Saldo Terisolasi dari Dana Riil • Mesin Sandbox GAIN</p>
+</div>
+</div>
+<div class="flex-shrink-0 ml-2">
+<span class="material-symbols-outlined text-tertiary text-[20px]">shield</span>
+</div>
+</div>
+</div>
+<!-- TITLE & SUBTITLE SECTION -->
+<div class="px-margin-mobile pt-2 pb-3">
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold tracking-tight">Portofolio &amp; Alokasi Aset</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Distribusi saldo virtual lintas bot aktif &amp; aset tersimpan</p>
+</div>
+<button aria-label="Riwayat Transaksi" class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary hover:text-on-surface transition-colors shadow-sm active:scale-95" id="btn-inspect-pnl" type="button">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+</button>
+</div>
+</div>
+<!-- SECTION 1: TOTAL NILAI PORTOFOLIO CARD -->
+<div class="px-margin-mobile mb-4">
+<div class="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 shadow-md">
+<!-- Ambient Brand Radial Glow -->
+<div class="absolute -top-10 -right-10 w-44 h-44 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-10 -left-10 w-36 h-36 bg-tertiary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-1.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant uppercase tracking-wider font-medium">Estimasi Nilai Total</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant/70 cursor-pointer">help</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-highest/80 text-secondary font-ticker-sm text-ticker-sm">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>Realtime</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-ticker-xl text-ticker-xl text-on-surface font-bold tracking-tight">10,412.50</span>
+<span class="font-ticker-md text-ticker-md text-secondary font-semibold">USDT</span>
+</div>
+<p class="font-ticker-sm text-ticker-sm text-on-surface-variant mb-3">≈ Rp 165.038.125 <span class="text-on-surface-variant/70">(Kurs BI 15.850)</span></p>
+<!-- Cumulative PnL Ribbon -->
+<div class="flex items-center justify-between py-2 px-3 rounded-xl bg-surface-container mb-3.5">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PnL Kumulatif</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold">
+              +412.50 USDT (+4.12%)
+            </span>
+<span class="font-label-caps text-label-caps text-on-surface-variant/80">Semua Waktu</span>
+</div>
+</div>
+<!-- Strategic Action Buttons -->
+<div class="grid grid-cols-2 gap-2.5">
+<button class="h-11 rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary-container font-headline-md text-[13px] font-semibold flex items-center justify-center gap-1.5 active:scale-98 transition-all shadow-sm" id="open-topup-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">add_card</span>
+<span>Top-up Virtual</span>
+</button>
+<button class="h-11 rounded-xl bg-surface-container-high hover:bg-surface-bright text-error font-headline-md text-[13px] font-semibold flex items-center justify-center gap-1.5 active:scale-98 transition-all shadow-sm" id="open-reset-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span>Reset Saldo</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 2: ALOKASI SALDO: MODAL BOT VS SALDO BEBAS -->
+<div class="px-margin-mobile mb-4">
+<div class="rounded-2xl bg-surface-container-low p-4 shadow-md">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">account_tree</span>
+<h2 class="font-headline-md text-[15px] font-semibold text-on-surface">Alokasi Cadangan vs Bot</h2>
+</div>
+<span class="font-ticker-sm text-ticker-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">2 Bot Aktif</span>
+</div>
+<!-- Segmented Metric Bar -->
+<div class="w-full h-3 rounded-full bg-surface-container-highest overflow-hidden flex mb-3 shadow-inner">
+<!-- Bot Allocation 9.6% -->
+<div class="h-full bg-tertiary-container transition-all duration-500 relative" style="width: 9.6%;" title="Bot Aktif: 9.6%"></div>
+<!-- Free Balance 90.4% -->
+<div class="h-full bg-primary transition-all duration-500" style="width: 90.4%;" title="Saldo Bebas: 90.4%"></div>
+</div>
+<!-- Split Details Grid -->
+<div class="grid grid-cols-2 gap-2.5 mb-3">
+<div class="p-3 rounded-xl bg-surface-container">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Terkunci di Bot</span>
+</div>
+<p class="font-ticker-md text-ticker-md font-semibold text-on-surface">1,000.00 <span class="text-[11px] text-on-surface-variant">USDT</span></p>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-sm text-ticker-sm text-tertiary font-medium">9.60% Rasio</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant/80">BTC &amp; ETH</span>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-surface-container">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Saldo Bebas (Idle)</span>
+</div>
+<p class="font-ticker-md text-ticker-md font-semibold text-on-surface">9,412.50 <span class="text-[11px] text-on-surface-variant">USDT</span></p>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-sm text-ticker-sm text-primary font-medium">90.40% Siap Pakai</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant/80">Cadangan</span>
+</div>
+</div>
+</div>
+<!-- Risk Engine Note -->
+<div class="flex items-start gap-2.5 px-3 py-2 rounded-xl bg-surface-container-high/60">
+<span class="material-symbols-outlined text-secondary text-[18px] flex-shrink-0 mt-0.5">verified_user</span>
+<p class="font-body-sm text-[11px] text-on-surface-variant leading-tight">
+<span class="text-secondary font-medium">Risk Engine:</span> Eksposur risiko aktif terkendali di 9.6%, jauh di bawah batas maksimum simulasi aman (20.0%).
+        </p>
+</div>
+</div>
+</div>
+<!-- SECTION 3: VISUAL DONUT CHART ALOKASI ASET KRIPTO -->
+<div class="px-margin-mobile mb-4">
+<div class="rounded-2xl bg-surface-container-low p-4 shadow-md">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">donut_large</span>
+<h2 class="font-headline-md text-[15px] font-semibold text-on-surface">Distribusi Komposisi Koin</h2>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">4 Simbol</span>
+</div>
+<!-- Interactive Donut SVG Presentation -->
+<div class="relative flex items-center justify-center my-3 py-1">
+<svg class="w-48 h-48 transform -rotate-90" viewbox="0 0 160 160">
+<!-- Background track -->
+<circle class="text-surface-container-high" cx="80" cy="80" fill="transparent" r="58" stroke="currentColor" stroke-width="15"></circle>
+<!-- USDT Segment: 75% = stroke-dasharray="273.3 364.4" stroke-dashoffset="0" (Circumference ~364.4) -->
+<circle class="transition-all duration-700 hover:opacity-90" cx="80" cy="80" fill="transparent" r="58" stroke="#38bdf8" stroke-dasharray="273.3 364.4" stroke-dashoffset="0" stroke-width="15"></circle>
+<!-- BTC Segment: 15% = stroke-dasharray="54.6 364.4" stroke-dashoffset="-273.3" -->
+<circle class="transition-all duration-700 hover:opacity-90" cx="80" cy="80" fill="transparent" r="58" stroke="#f59e0b" stroke-dasharray="54.6 364.4" stroke-dashoffset="-273.3" stroke-width="15"></circle>
+<!-- ETH Segment: 8% = stroke-dasharray="29.1 364.4" stroke-dashoffset="-327.9" -->
+<circle class="transition-all duration-700 hover:opacity-90" cx="80" cy="80" fill="transparent" r="58" stroke="#818cf8" stroke-dasharray="29.1 364.4" stroke-dashoffset="-327.9" stroke-width="15"></circle>
+<!-- SOL Segment: 2% = stroke-dasharray="7.3 364.4" stroke-dashoffset="-357.0" -->
+<circle class="transition-all duration-700 hover:opacity-90" cx="80" cy="80" fill="transparent" r="58" stroke="#10b981" stroke-dasharray="7.3 364.4" stroke-dashoffset="-357.0" stroke-width="15"></circle>
+</svg>
+<!-- Donut Center Label -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+<span class="font-ticker-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">Total Terhitung</span>
+<span class="font-ticker-lg text-[18px] font-bold text-on-surface">$10,412.50</span>
+<div class="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full bg-surface-container text-secondary font-ticker-sm text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>4 Portofolio Aset</span>
+</div>
+</div>
+</div>
+<!-- Quick Donut Legend Pills -->
+<div class="grid grid-cols-2 gap-2 pt-1">
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8]"></span>
+<span class="font-headline-md text-body-sm font-medium text-on-surface">USDT</span>
+</div>
+<div class="text-right">
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">75.0%</span>
+<span class="block font-ticker-sm text-[10px] text-on-surface-variant">$7,809.37</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></span>
+<span class="font-headline-md text-body-sm font-medium text-on-surface">BTC</span>
+</div>
+<div class="text-right">
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">15.0%</span>
+<span class="block font-ticker-sm text-[10px] text-secondary">+$34.20 PnL</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#818cf8]"></span>
+<span class="font-headline-md text-body-sm font-medium text-on-surface">ETH</span>
+</div>
+<div class="text-right">
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">8.0%</span>
+<span class="block font-ticker-sm text-[10px] text-secondary">+$18.50 PnL</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>
+<span class="font-headline-md text-body-sm font-medium text-on-surface">SOL</span>
+</div>
+<div class="text-right">
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">2.0%</span>
+<span class="block font-ticker-sm text-[10px] text-error">-$3.10 PnL</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 4: RINCIAN ASET KOIN (ASSET BREAKDOWN LIST) -->
+<div class="px-margin-mobile mb-4">
+<div class="flex items-center justify-between mb-2.5 px-0.5">
+<h2 class="font-headline-md text-[16px] font-bold text-on-surface">Rincian Posisi Koin</h2>
+<button class="text-secondary font-ticker-sm text-ticker-sm hover:underline flex items-center gap-0.5" type="button">
+<span>Urutkan: Nilai</span>
+<span class="material-symbols-outlined text-[16px]">swap_vert</span>
+</button>
+</div>
+<div class="flex flex-col gap-2">
+<!-- USDT Card -->
+<div class="p-3.5 rounded-2xl bg-surface-container-low shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-ticker-lg text-[15px] font-bold text-secondary">
+            ₮
+          </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-body-lg font-bold text-on-surface">USDT</span>
+<span class="font-body-sm text-[11px] px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">Tether</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Proporsi: <span class="text-secondary font-ticker-sm">75.0%</span></p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-ticker-md text-ticker-md font-semibold text-on-surface">7,809.37</p>
+<span class="inline-flex items-center gap-1 font-ticker-sm text-[11px] text-secondary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            Siap Pakai
+          </span>
+</div>
+</div>
+<!-- BTC Card -->
+<div class="p-3.5 rounded-2xl bg-surface-container-low shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-ticker-lg text-[15px] font-bold text-[#f59e0b]">
+            ₿
+          </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-body-lg font-bold text-on-surface">BTC</span>
+<span class="font-body-sm text-[11px] px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">Bitcoin</span>
+</div>
+<p class="font-ticker-sm text-[11px] text-on-surface-variant mt-0.5">0.0242 BTC <span class="text-on-surface-variant/70">($1,561.88)</span></p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-ticker-sm text-[11px] text-on-surface-variant mb-0.5">Proporsi: 15.0%</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-highest font-ticker-sm text-ticker-sm text-secondary font-semibold">
+            +$34.20 (+2.24%)
+          </span>
+</div>
+</div>
+<!-- ETH Card -->
+<div class="p-3.5 rounded-2xl bg-surface-container-low shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-ticker-lg text-[15px] font-bold text-tertiary">
+            Ξ
+          </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-body-lg font-bold text-on-surface">ETH</span>
+<span class="font-body-sm text-[11px] px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">Ethereum</span>
+</div>
+<p class="font-ticker-sm text-[11px] text-on-surface-variant mt-0.5">0.2430 ETH <span class="text-on-surface-variant/70">($833.00)</span></p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-ticker-sm text-[11px] text-on-surface-variant mb-0.5">Proporsi: 8.0%</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-highest font-ticker-sm text-ticker-sm text-secondary font-semibold">
+            +$18.50 (+2.27%)
+          </span>
+</div>
+</div>
+<!-- SOL Card -->
+<div class="p-3.5 rounded-2xl bg-surface-container-low shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-ticker-lg text-[15px] font-bold text-secondary">
+            ◎
+          </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-body-lg font-bold text-on-surface">SOL</span>
+<span class="font-body-sm text-[11px] px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">Solana</span>
+</div>
+<p class="font-ticker-sm text-[11px] text-on-surface-variant mt-0.5">1.4050 SOL <span class="text-on-surface-variant/70">($208.25)</span></p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-ticker-sm text-[11px] text-on-surface-variant mb-0.5">Proporsi: 2.0%</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-highest font-ticker-sm text-ticker-sm text-error font-semibold">
+            -$3.10 (-1.47%)
+          </span>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 5: SAFETY SANDBOX NOTICE & AUDIT LOG CALLOUT -->
+<div class="px-margin-mobile mb-2">
+<div class="p-4 rounded-2xl bg-surface-container-high/40 flex items-center justify-between">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">history_edu</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-md text-body-md font-semibold text-on-surface truncate">Riwayat Audit Alokasi</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant truncate">Tersinkronisasi otomatis dengan Trade Engine</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-bright text-secondary font-ticker-sm text-ticker-sm font-semibold flex-shrink-0" type="button">
+        Lihat Log
+      </button>
+</div>
+</div>
+<!-- MODAL 1: RESET SALDO VIRTUAL CONFIRMATION (FR-PAPER-002) -->
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center p-0 sm:p-4" id="reset-modal-backdrop">
+<div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-surface-container-low p-5 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 flex flex-col" id="reset-modal-panel">
+<!-- Modal Header Handle (Mobile UX) -->
+<div class="w-12 h-1.5 rounded-full bg-surface-container-highest mx-auto mb-4 sm:hidden"></div>
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-error-container/30 text-error flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">restart_alt</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Reset Saldo Simulasi</h3>
+<span class="font-ticker-sm text-[10px] text-tertiary">PROTOKOL FR-PAPER-002</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface" id="close-reset-modal" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Warning Box -->
+<div class="p-3.5 rounded-xl bg-error-container/15 mb-4">
+<div class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+<p class="font-body-sm text-[12px] text-on-error-container leading-relaxed">
+            Mereset saldo akan mengembalikan modal virtual Anda ke standar default <strong class="font-ticker-sm text-on-surface">10,000.00 USDT</strong> dan secara paksa menghentikan seluruh bot simulasi yang sedang berjalan.
+          </p>
+</div>
+</div>
+<!-- Guardrail Checklists -->
+<div class="flex flex-col gap-2.5 mb-5">
+<label class="flex items-center gap-3 p-3 rounded-xl bg-surface-container cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-secondary focus:ring-0 bg-surface-container-highest" id="check-stop-bots" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-body-sm font-semibold text-on-surface">Hentikan otomatis 2 bot aktif</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Likuidasi posisi BTC Scalper &amp; ETH Grid ke USDT</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl bg-surface-container cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-secondary focus:ring-0 bg-surface-container-highest" id="check-archive-pnl" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-body-sm font-semibold text-on-surface">Simpan arsip riwayat PnL</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Catat hasil saat ini (+412.50 USDT) ke buku analitik</span>
+</div>
+</label>
+</div>
+<!-- Dialog Actions -->
+<div class="grid grid-cols-2 gap-2.5 pt-1">
+<button class="h-11 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-headline-md text-body-md font-semibold" id="cancel-reset-btn" type="button">
+          Batalkan
+        </button>
+<button class="h-11 rounded-xl bg-error hover:opacity-90 text-on-error font-headline-md text-body-md font-semibold flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition-all" id="confirm-reset-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>Konfirmasi Reset</span>
+</button>
+</div>
+</div>
+</div>
+<!-- MODAL 2: TOP-UP MODAL SIMULASI SHEET -->
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center p-0 sm:p-4" id="topup-modal-backdrop">
+<div class="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl bg-surface-container-low p-5 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 flex flex-col" id="topup-modal-panel">
+<div class="w-12 h-1.5 rounded-full bg-surface-container-highest mx-auto mb-4 sm:hidden"></div>
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-secondary-container/20 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">add_card</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Injeksi Modal Virtual</h3>
+<span class="font-ticker-sm text-[10px] text-secondary">FAUCET SANDBOX GAIN</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface" id="close-topup-modal" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+        Pilih jumlah saldo USDT virtual instan untuk menguji strategi volume besar tanpa batas risiko modal nyata.
+      </p>
+<!-- Preset Chips -->
+<div class="grid grid-cols-3 gap-2 mb-4">
+<button class="topup-preset-chip py-2 rounded-xl bg-surface-container hover:bg-secondary-container/30 text-on-surface font-ticker-md text-ticker-md font-semibold text-center transition-colors" data-amount="1000" type="button">
+          +1,000
+        </button>
+<button class="topup-preset-chip py-2 rounded-xl bg-surface-container hover:bg-secondary-container/30 text-on-surface font-ticker-md text-ticker-md font-semibold text-center transition-colors" data-amount="5000" type="button">
+          +5,000
+        </button>
+<button class="topup-preset-chip py-2 rounded-xl bg-surface-container hover:bg-secondary-container/30 text-secondary font-ticker-md text-ticker-md font-semibold text-center transition-colors" data-amount="10000" type="button">
+          +10,000
+        </button>
+</div>
+<!-- Custom Amount Input -->
+<div class="p-3 rounded-xl bg-surface-container mb-5 flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Nominal Kustom:</span>
+<div class="flex items-center gap-1.5">
+<input class="w-24 bg-transparent font-ticker-md text-ticker-md text-right text-on-surface focus:outline-none" id="custom-topup-input" type="number" value="2500"/>
+<span class="font-ticker-md text-ticker-md text-secondary font-semibold">USDT</span>
+</div>
+</div>
+<!-- Action -->
+<div class="grid grid-cols-2 gap-2.5">
+<button class="h-11 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-headline-md text-body-md font-semibold" id="cancel-topup-btn" type="button">
+          Batal
+        </button>
+<button class="h-11 rounded-xl bg-secondary-container hover:bg-secondary text-on-secondary-container font-headline-md text-body-md font-semibold flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition-all" id="confirm-topup-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">input</span>
+<span>Injeksi Dana</span>
+</button>
+</div>
+</div>
+</div>
+<!-- TOAST FEEDBACK NOTIFICATION -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 transform translate-y-3" id="toast-notify">
+<div class="px-4 py-2.5 rounded-full bg-surface-container-highest shadow-xl flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]" id="toast-icon">check_circle</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface" id="toast-msg">Perubahan tersimpan</span>
+</div>
+</div>
+</div>
+<script>
+  (function initPortfolioScreen() {
+    // Modal Selectors
+    const resetBackdrop = document.getElementById('reset-modal-backdrop');
+    const resetPanel = document.getElementById('reset-modal-panel');
+    const openResetBtn = document.getElementById('open-reset-btn');
+    const closeResetModal = document.getElementById('close-reset-modal');
+    const cancelResetBtn = document.getElementById('cancel-reset-btn');
+    const confirmResetBtn = document.getElementById('confirm-reset-btn');
+
+    const topupBackdrop = document.getElementById('topup-modal-backdrop');
+    const topupPanel = document.getElementById('topup-modal-panel');
+    const openTopupBtn = document.getElementById('open-topup-btn');
+    const closeTopupModal = document.getElementById('close-topup-modal');
+    const cancelTopupBtn = document.getElementById('cancel-topup-btn');
+    const confirmTopupBtn = document.getElementById('confirm-topup-btn');
+    const presetChips = document.querySelectorAll('.topup-preset-chip');
+    const customTopupInput = document.getElementById('custom-topup-input');
+
+    const toastNotify = document.getElementById('toast-notify');
+    const toastMsg = document.getElementById('toast-msg');
+    const toastIcon = document.getElementById('toast-icon');
+
+    function showToast(message, isError = false) {
+      if (!toastNotify) return;
+      toastMsg.textContent = message;
+      toastIcon.textContent = isError ? 'error' : 'check_circle';
+      toastIcon.className = isError 
+        ? 'material-symbols-outlined text-error text-[18px]' 
+        : 'material-symbols-outlined text-secondary text-[18px]';
+
+      toastNotify.classList.remove('opacity-0', 'translate-y-3', 'pointer-events-none');
+      toastNotify.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toastNotify.classList.add('opacity-0', 'translate-y-3', 'pointer-events-none');
+        toastNotify.classList.remove('opacity-100', 'translate-y-0');
+      }, 2500);
+    }
+
+    function openModal(backdrop, panel) {
+      backdrop.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+        panel.classList.remove('translate-y-full', 'sm:scale-95');
+        panel.classList.add('translate-y-0', 'sm:scale-100');
+      });
+    }
+
+    function closeModal(backdrop, panel) {
+      backdrop.classList.add('opacity-0');
+      backdrop.classList.remove('opacity-100');
+      panel.classList.add('translate-y-full', 'sm:scale-95');
+      panel.classList.remove('translate-y-0', 'sm:scale-100');
+      setTimeout(() => {
+        backdrop.classList.add('hidden');
+      }, 300);
+    }
+
+    // Reset Modal Events
+    if (openResetBtn) {
+      openResetBtn.addEventListener('click', () => openModal(resetBackdrop, resetPanel));
+    }
+    if (closeResetModal) {
+      closeResetModal.addEventListener('click', () => closeModal(resetBackdrop, resetPanel));
+    }
+    if (cancelResetBtn) {
+      cancelResetBtn.addEventListener('click', () => closeModal(resetBackdrop, resetPanel));
+    }
+    if (confirmResetBtn) {
+      confirmResetBtn.addEventListener('click', () => {
+        closeModal(resetBackdrop, resetPanel);
+        showToast('Saldo virtual dikembalikan ke 10,000.00 USDT default!');
+      });
+    }
+
+    // Top-up Modal Events
+    if (openTopupBtn) {
+      openTopupBtn.addEventListener('click', () => openModal(topupBackdrop, topupPanel));
+    }
+    if (closeTopupModal) {
+      closeTopupModal.addEventListener('click', () => closeModal(topupBackdrop, topupPanel));
+    }
+    if (cancelTopupBtn) {
+      cancelTopupBtn.addEventListener('click', () => closeModal(topupBackdrop, topupPanel));
+    }
+    if (presetChips) {
+      presetChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          const val = chip.getAttribute('data-amount');
+          if (customTopupInput) customTopupInput.value = val;
+        });
+      });
+    }
+    if (confirmTopupBtn) {
+      confirmTopupBtn.addEventListener('click', () => {
+        const amt = customTopupInput ? customTopupInput.value : '1,000';
+        closeModal(topupBackdrop, topupPanel);
+        showToast('Berhasil menambahkan +' + amt + ' USDT virtual!');
+      });
+    }
+
+    // Close on backdrop touch
+    [resetBackdrop, topupBackdrop].forEach(b => {
+      if (b) {
+        b.addEventListener('click', (e) => {
+          if (e.target === b) {
+            closeModal(resetBackdrop, resetPanel);
+            closeModal(topupBackdrop, topupPanel);
+          }
+        });
+      }
+    });
+
+    // Inspect PnL quick interaction
+    const inspectBtn = document.getElementById('btn-inspect-pnl');
+    if (inspectBtn) {
+      inspectBtn.addEventListener('click', () => {
+        showToast('Membuka Laporan Realisasi PnL GAIN');
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.3)]" data-active-classes="text-secondary"><div class="h-16 px-space-xs flex items-center justify-around"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">space_dashboard</span><span class="font-label-caps text-label-caps">Beranda</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pasar" href="#"><span class="material-symbols-outlined text-[22px]">candlestick_chart</span><span class="font-label-caps text-label-caps">Pasar</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="bot-trading" href="#"><span class="material-symbols-outlined text-[22px]">smart_toy</span><span class="font-label-caps text-label-caps">Bot</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="portofolio" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-caps text-label-caps">Portofolio</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pengaturan" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-caps text-label-caps">Akun</span></a></div></nav></body></html>

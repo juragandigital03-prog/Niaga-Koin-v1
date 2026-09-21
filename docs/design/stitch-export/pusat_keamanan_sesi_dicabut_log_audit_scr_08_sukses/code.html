@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>GAIN - Niaga Koin Terminal</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#181c24", "secondary-fixed-dim": "#7bd0ff", "on-background": "#dfe2ee", "secondary": "#7bd0ff", "on-secondary-container": "#00374d", "primary-container": "#3198dc", "surface-dim": "#0f131c", "tertiary-container": "#7c87f3", "surface": "#0f131c", "surface-bright": "#353942", "on-secondary-fixed-variant": "#004c69", "surface-container-high": "#262a33", "on-primary-fixed-variant": "#004b73", "on-primary-container": "#002c47", "on-primary-fixed": "#001d31", "error": "#ffb4ab", "outline-variant": "#3f4850", "on-error-container": "#ffdad6", "on-primary": "#003351", "on-tertiary": "#131e8c", "primary-fixed-dim": "#93ccff", "on-tertiary-fixed-variant": "#2f3aa3", "inverse-on-surface": "#2c3039", "on-surface-variant": "#bfc7d2", "tertiary-fixed": "#e0e0ff", "surface-container-highest": "#31353e", "outline": "#89929b", "secondary-container": "#00a6e0", "tertiary": "#bdc2ff", "on-error": "#690005", "on-secondary": "#00354a", "on-surface": "#dfe2ee", "inverse-surface": "#dfe2ee", "error-container": "#93000a", "secondary-fixed": "#c4e7ff", "on-tertiary-fixed": "#000767", "background": "#0f131c", "tertiary-fixed-dim": "#bdc2ff", "surface-container-lowest": "#0a0e16", "primary": "#93ccff", "surface-tint": "#93ccff", "inverse-primary": "#006398", "on-tertiary-container": "#081486", "on-secondary-fixed": "#001e2c", "surface-container": "#1c2028", "surface-variant": "#31353e", "primary-fixed": "#cce5ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-mobile": "0.75rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-dense": "0.5rem", "margin": "1.5rem" }, fontFamily: { "body-lg": ["Inter"], "ticker-lg": ["JetBrains Mono"], "headline-md": ["Inter"], "label-caps": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "ticker-xl": ["JetBrains Mono"], "headline-lg": ["Inter"], "ticker-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "ticker-md": ["JetBrains Mono"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "ticker-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }], "label-caps": ["11px", { lineHeight: "14px", fontWeight: "600" }], "headline-lg-mobile": ["22px", { lineHeight: "30px", fontWeight: "600" }], "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "ticker-xl": ["32px", { lineHeight: "40px", fontWeight: "700" }], "headline-lg": ["30px", { lineHeight: "38px", fontWeight: "600" }], "ticker-sm": ["11px", { lineHeight: "14px", fontWeight: "500" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "ticker-md": ["14px", { lineHeight: "20px", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#0f131c;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 5rem);}.pt-safe{padding-top:env(safe-area-inset-top, 0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-xs"><div class="flex items-center gap-space-xs min-w-0 flex-shrink-0"><img alt="GAIN Monogram Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1eclB7tX9CuaySQk92XyTdqK6y8r6eBDaYKc2BVkmdsmTPtaNFJBmzjRkaLctl5Hx9I1WxKXfAIxWk8nD_rrfP4PQNgDqQF0T0rgvyWaYF-o4o2c70MzKq-jEf3IllZemg7SeVWyc-WyBPtl6GkI6zDCm9EmGtB-SRlYhPO3KmlaQxI2XkS_iPqLboUgdsevBEiN0T3IkbocrFM7Bl40hGndlBu5StDAgt1YnI7EKkgKDXYvvTqx"/><div class="flex flex-col justify-center select-none"><span class="font-headline-md text-headline-md tracking-tight text-on-surface leading-none font-bold">GAIN</span><span class="font-ticker-sm text-ticker-sm text-primary tracking-widest leading-tight uppercase font-medium">NIAGA KOIN</span></div></div><div class="flex items-center gap-space-xs flex-1 justify-center px-space-xs overflow-hidden"><div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-high/80 backdrop-blur-md"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-ticker-sm text-ticker-sm text-tertiary font-semibold tracking-wide whitespace-nowrap">PAPER</span><span class="hidden sm:inline font-ticker-sm text-ticker-sm text-on-surface-variant font-normal">12ms</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Notifikasi Sistem" class="w-11 h-11 relative rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface active:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-8 space-y-4 px-margin-mobile">
+<!-- Sub-Header & Navigation Context -->
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-space-sm">
+<button aria-label="Kembali ke Pengaturan Akun" class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface active:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold tracking-tight">Pusat Keamanan</h1>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Audit Trail FR-SEC-001</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Segarkan Log Audit" class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-secondary hover:text-on-surface active:bg-surface-container-high transition-transform active:rotate-180 duration-300" id="refresh-audit-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+</button>
+</div>
+</div><div class="flex items-start justify-between gap-3 p-3.5 rounded-xl bg-surface-container-high border border-secondary/30 shadow-md relative overflow-hidden transition-all" id="success-revocation-toast"><div class="flex items-start gap-3 min-w-0"><div class="w-9 h-9 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary flex-shrink-0 mt-0.5"><span class="material-symbols-outlined text-[20px]">check_circle</span></div><div class="flex flex-col min-w-0"><div class="flex items-center gap-2 flex-wrap"><span class="font-body-md text-body-md text-on-surface font-bold">Sesi Berhasil Diputuskan</span><span class="px-1.5 py-0.2 rounded bg-surface-container text-secondary font-ticker-sm text-ticker-sm font-semibold">#EVT-89450 · SUKSES</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 leading-tight">1 sesi perangkat (MacBook Pro M2) telah dicabut secara permanen. Token JWT di-revoke seketika.</p></div></div><button aria-label="Tutup Notifikasi" class="text-on-surface-variant hover:text-on-surface p-1 flex-shrink-0" onclick="document.getElementById('success-revocation-toast').remove()" type="button"><span class="material-symbols-outlined text-[18px]">close</span></button></div>
+<!-- Compliance Banner -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container-low text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-tertiary">verified_user</span>
+<span class="font-ticker-sm text-ticker-sm tracking-tight text-on-surface-variant">IMMUTABLE LEDGER · ISO/IEC 27001 COMPLIANT</span>
+</div>
+<span class="font-ticker-sm text-ticker-sm text-secondary bg-surface-container-high px-1.5 py-0.5 rounded font-medium">APPEND-ONLY</span>
+</div>
+<!-- Security Score Bento Unit -->
+<div class="relative overflow-hidden rounded-2xl bg-surface-container p-space-md shadow-md">
+<div class="absolute -right-10 -bottom-10 w-36 h-36 bg-gradient-to-br from-secondary/15 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-secondary font-semibold uppercase tracking-widest">Status Proteksi Akun</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-surface-container-highest text-primary font-ticker-sm text-ticker-sm font-semibold">TIER A+</span>
+</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold tracking-tight">Sangat Terproteksi</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-[210px] leading-relaxed">
+          Kredensial trading, enkripsi brankas API, dan verifikasi multi-faktor aktif sempurna.
+        </p>
+</div>
+<!-- Radial Progress Gauge (SVG) -->
+<div class="relative flex-shrink-0 flex items-center justify-center w-24 h-24">
+<svg class="w-full h-full -rotate-90 transform" viewbox="0 0 88 88">
+<circle class="text-surface-container-highest" cx="44" cy="44" fill="transparent" r="36" stroke="currentColor" stroke-width="7"></circle>
+<circle class="text-secondary transition-all duration-700" cx="44" cy="44" fill="transparent" r="36" stroke="currentColor" stroke-dasharray="226.19" stroke-dashoffset="4.52" stroke-linecap="round" stroke-width="7"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-ticker-xl text-ticker-lg text-on-surface font-bold leading-none">98</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant font-medium mt-0.5">/100</span>
+</div>
+</div>
+</div>
+<!-- Quick Security Health Checklist Mini Bar -->
+<div class="grid grid-cols-4 gap-1.5 mt-space-md pt-3 bg-surface-container-low/70 -mx-4 -mb-4 px-4 pb-3 rounded-b-2xl">
+<div class="flex flex-col items-center text-center">
+<span class="font-ticker-sm text-ticker-sm text-secondary font-semibold">2FA TOTP</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Aktif</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-ticker-sm text-ticker-sm text-secondary font-semibold">AES-256</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Brankas</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-ticker-sm text-ticker-sm text-secondary font-semibold">Whitelist</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">24 Jam Lock</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-ticker-sm text-ticker-sm text-secondary font-semibold">Guardrail</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Siaga</span>
+</div>
+</div>
+</div>
+<!-- Primary Protection Controls -->
+<div class="flex flex-col space-y-2">
+<div class="flex items-center justify-between px-1">
+<h2 class="font-headline-md text-body-lg text-on-surface font-bold">Proteksi &amp; Otentikasi</h2>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">4/4 Terkonfigurasi</span>
+</div>
+<div class="flex flex-col rounded-2xl bg-surface-container divide-y-0 space-y-1.5 p-1.5">
+<!-- 2FA Item -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">Autentikasi Dua Faktor (2FA)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-secondary font-ticker-sm text-ticker-sm font-semibold">TOTP</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Google Authenticator aktif untuk login &amp; penarikan</span>
+</div>
+</div>
+<button class="ml-2 flex-shrink-0 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-highest text-secondary font-body-sm text-body-sm font-semibold transition-colors" type="button">
+          Atur
+        </button>
+</div>
+<!-- Telegram Bot Alerts -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">send</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">Notifikasi Instan Telegram</span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</div>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant truncate">@GAINSecurityBot · Terhubung</span>
+</div>
+</div>
+<button class="ml-2 flex-shrink-0 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-highest text-on-surface-variant font-body-sm text-body-sm font-medium transition-colors" type="button">
+          Uji Tes
+        </button>
+</div>
+<!-- Anti-Phishing Code -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">key</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">Kode Anti-Phishing</span>
+<span class="font-ticker-sm text-ticker-sm font-bold text-tertiary bg-surface-container px-1.5 py-0.5 rounded">G • • • 9</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Tersemat pada setiap email resmi GAIN</span>
+</div>
+</div>
+<button class="ml-2 flex-shrink-0 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-highest text-secondary font-body-sm text-body-sm font-medium transition-colors" type="button">
+          Ubah
+        </button>
+</div>
+<!-- API Key Vault Encryption -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">lock</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">Enkripsi Brankas API</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-primary font-ticker-sm text-ticker-sm">HSM FIPS 140-2</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Enkripsi AES-256 (Trade-Only Lock Enforced)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px] mr-2">verified</span>
+</div>
+</div>
+</div>
+<!-- Withdrawal Address Whitelist (FR-USER-002) -->
+<div class="rounded-2xl bg-surface-container p-space-md shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</span>
+<div>
+<h3 class="font-body-md text-body-md text-on-surface font-bold">Whitelist Alamat Penarikan</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Penarikan hanya diizinkan ke dompet terdaftar</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold">1 AKTIF</span>
+</div>
+<!-- Security Delay Notice Box -->
+<div class="p-3 rounded-xl bg-surface-container-low flex items-start gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0 mt-0.5">hourglass_top</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">
+<span class="font-semibold text-secondary">Kunci Proteksi 24 Jam:</span> Setiap penambahan atau perubahan alamat baru wajib melalui jeda keamanan 24 jam sebelum eksekusi transfer dana.
+      </p>
+</div>
+<!-- Verified Masked Address Card -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-high">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface font-bold text-xs flex-shrink-0">
+          ₮
+        </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">Cold Storage Utama (Binance Safe)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface text-secondary font-ticker-sm text-ticker-sm font-semibold">VERIFIED</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant font-mono">USDT TRC20: TLp8e...49xK9Q</span>
+<button aria-label="Salin Alamat Whitelist" class="text-on-surface-variant hover:text-secondary" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<button aria-label="Kelola Alamat Whitelist" class="text-on-surface-variant hover:text-on-surface p-1" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<button class="w-full py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-secondary font-body-sm text-body-sm font-semibold flex items-center justify-center gap-2 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+      Tambah Alamat Penarikan Baru
+    </button>
+</div>
+<!-- Sesi Login & Manajemen Perangkat Aktif -->
+<div class="rounded-2xl bg-surface-container p-space-md shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">devices</span>
+</span>
+<h3 class="font-body-md text-body-md text-on-surface font-bold">Perangkat &amp; Sesi Aktif</h3>
+</div>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">2 Sesi Valid</span>
+</div>
+<!-- Current Device -->
+<div class="p-3 rounded-xl bg-surface-container-high flex flex-col gap-2">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">smartphone</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-body-md text-body-md text-on-surface font-bold">iPhone 15 Pro</span>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface text-secondary font-ticker-sm text-ticker-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                Ini Perangkat Anda
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Safari Mobile 17.4 · Jakarta, Indonesia</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1 font-ticker-sm text-ticker-sm text-on-surface-variant">
+<span>IP: <span class="text-on-surface font-mono">182.253.14.88</span></span>
+<span class="text-secondary font-medium">Aktif Sekarang</span>
+</div>
+</div>
+<!-- Secondary Device -->
+<!-- Emergency Action Button -->
+<div class="w-full py-2.5 rounded-xl bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm font-medium flex items-center justify-center gap-2 select-none"><span class="material-symbols-outlined text-[18px] text-secondary">check_circle</span>Tidak Ada Sesi Lain yang Aktif</div>
+</div>
+<!-- Immutable Audit Trail Feed (FR-SEC-001) -->
+<div class="flex flex-col space-y-3">
+<div class="flex items-center justify-between px-1">
+<div>
+<h2 class="font-headline-md text-body-lg text-on-surface font-bold">Audit Trail Terdesentralisasi</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Log kriptografis append-only tidak dapat dihapus</p>
+</div>
+<span class="font-ticker-sm text-ticker-sm text-primary px-2 py-0.5 rounded bg-surface-container">35 Catatan</span>
+</div>
+<!-- Filter Quick Chips -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1" id="audit-filter-bar">
+<button class="filter-chip px-3 py-1.5 rounded-lg bg-secondary text-on-secondary font-body-sm text-body-sm font-semibold whitespace-nowrap shadow-sm" data-filter="all" type="button">Semua Aksi (35)</button>
+<button class="filter-chip px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm whitespace-nowrap transition-colors" data-filter="api" type="button">
+        Kredensial API
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm whitespace-nowrap transition-colors" data-filter="auth" type="button">
+        Sesi &amp; Auth
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm whitespace-nowrap transition-colors" data-filter="risk" type="button">
+        Batas Risiko
+      </button>
+</div>
+<!-- Structured Audit Log Items -->
+<div class="space-y-2" id="audit-log-container"><div class="audit-item p-3.5 rounded-xl bg-surface-container flex flex-col gap-2.5 transition-colors border border-secondary/20" data-category="auth"><div class="flex items-start justify-between gap-2"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary flex-shrink-0 animate-pulse"></span><span class="font-body-md text-body-md text-on-surface font-semibold">Pencabutan Sesi Perangkat (Revoke Token)</span></div><span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold flex-shrink-0">SUKSES</span></div><div class="p-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface">Sesi MacBook Pro M2 (Chrome macOS, IP: <span class="font-mono text-secondary font-medium">36.72.198.112</span>, Surabaya) dicabut via otorisasi TOTP 2FA.</div><div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm"><div class="flex items-center gap-2 font-mono"><span>Baru saja (14:45:10 WIB)</span><span>•</span><span>IP: 182.253.14.88</span></div><span class="text-secondary font-semibold">#EVT-89450</span></div></div>
+<!-- Item 1: Risk Parameter Modification -->
+<div class="audit-item p-3.5 rounded-xl bg-surface-container flex flex-col gap-2.5 transition-colors" data-category="risk">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary flex-shrink-0"></span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Ubah Parameter Stop-Loss Bot #19</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold flex-shrink-0">SUKSES</span>
+</div>
+<div class="p-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface">
+          Hard Cap SL disesuaikan dari <span class="font-mono text-error font-semibold">3.0%</span> menjadi <span class="font-mono text-secondary font-semibold">2.5%</span> pada pair BTC/USDT.
+        </div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm">
+<div class="flex items-center gap-2 font-mono">
+<span>Hari ini 14:32:05 WIB</span>
+<span>•</span>
+<span>IP: 182.253.14.88</span>
+</div>
+<span class="text-tertiary">#EVT-89421</span>
+</div>
+</div>
+<!-- Item 2: API Connection Test -->
+<div class="audit-item p-3.5 rounded-xl bg-surface-container flex flex-col gap-2.5 transition-colors" data-category="api">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary flex-shrink-0"></span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Uji Koneksi API Key Binance</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold flex-shrink-0">TRADE-ONLY OK</span>
+</div>
+<div class="p-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface">
+          Ping latency 14ms. Verifikasi izin penarikan (Withdrawal) terdeteksi NONAKTIF (Sesuai SOP Keamanan).
+        </div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm">
+<div class="flex items-center gap-2 font-mono">
+<span>Hari ini 11:15:10 WIB</span>
+<span>•</span>
+<span>IP: 182.253.14.88</span>
+</div>
+<span class="text-tertiary">#EVT-89304</span>
+</div>
+</div>
+<!-- Item 3: Failed Login Attempt (Anomaly/Security Incident) -->
+<div class="audit-item p-3.5 rounded-xl bg-surface-container flex flex-col gap-2.5 transition-colors" data-category="auth">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error flex-shrink-0"></span>
+<span class="font-body-md text-body-md text-error font-semibold">Percobaan Login Gagal (2FA Salah)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-error-container/30 text-error font-ticker-sm text-ticker-sm font-bold flex-shrink-0">DITOLAK SISTEM</span>
+</div>
+<div class="p-2 rounded-lg bg-error-container/15 text-error font-body-sm text-body-sm leading-normal">
+          Kode TOTP tidak valid 3 kali berturut-turut. Pemicu proteksi lockout 5 menit diaktifkan otomatis oleh GAIN Shield.
+        </div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm">
+<div class="flex items-center gap-2 font-mono text-error">
+<span>Kemarin 22:40:12 WIB</span>
+<span>•</span>
+<span>IP: 45.12.89.14 (Amsterdam, NL)</span>
+</div>
+<span class="text-error font-bold">#SEC-ALERT-11</span>
+</div>
+</div>
+<!-- Item 4: API Key Rotation -->
+<div class="audit-item p-3.5 rounded-xl bg-surface-container flex flex-col gap-2.5 transition-colors" data-category="api">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary flex-shrink-0"></span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Rotasi Kunci Rahasia API Tokocrypto</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary font-ticker-sm text-ticker-sm font-semibold flex-shrink-0">TERENKRIPSI</span>
+</div>
+<div class="p-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface">
+          Secret key lama diarsip ke cold storage vault. Kunci baru ditandatangani oleh sertifikat klien.
+        </div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm">
+<div class="flex items-center gap-2 font-mono">
+<span>Kemarin 16:15:00 WIB</span>
+<span>•</span>
+<span>IP: 182.253.14.88</span>
+</div>
+<span class="text-tertiary">#EVT-89110</span>
+</div>
+</div>
+<!-- Item 5: Auto Circuit Breaker -->
+<div class="audit-item p-3.5 rounded-xl bg-surface-container flex flex-col gap-2.5 transition-colors" data-category="risk">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary flex-shrink-0"></span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Aktivasi Circuit Breaker Otomatis</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-tertiary font-ticker-sm text-ticker-sm font-semibold flex-shrink-0">GUARDRAIL</span>
+</div>
+<div class="p-2 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface">
+          Volatilitas pasar ekstrim terdeteksi (&gt;6% penurunan dalam 3 menit). Seluruh bot trading dipause sementara.
+        </div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm">
+<div class="flex items-center gap-2 font-mono">
+<span>2 hari lalu 03:00:22 WIB</span>
+<span>•</span>
+<span>GAIN Engine Core</span>
+</div>
+<span class="text-tertiary">#SYS-AUTO-04</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Export & Privacy Notice Card -->
+<div class="rounded-2xl bg-surface-container p-space-md shadow-sm space-y-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-secondary">download_for_offline</span>
+<h3 class="font-body-md text-body-md text-on-surface font-bold">Verifikasi Integritas &amp; Ekspor Data</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+      Seluruh aktivitas dicatat ke dalam ledger penyimpanan <span class="font-semibold text-on-surface">append-only</span> yang dimeteraikan secara kriptografis. Data log ini dilindungi secara sah menurut standar UU Perlindungan Data Pribadi (UU PDP) dan regulasi pasar komoditas berjangka.
+    </p>
+<div class="grid grid-cols-2 gap-2 pt-1">
+<button class="py-2.5 px-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-body-sm text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">description</span>
+        Ekspor CSV
+      </button>
+<button class="py-2.5 px-3 rounded-xl bg-primary text-on-primary hover:bg-primary-fixed-dim font-body-sm text-body-sm font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+        PDF Bertanda Tangan
+      </button>
+</div>
+</div>
+<!-- Micro-interaction script for filtering and quick refresh -->
+<script>
+    (function() {
+      const filterChips = document.querySelectorAll('.filter-chip');
+      const auditItems = document.querySelectorAll('.audit-item');
+      const refreshBtn = document.getElementById('refresh-audit-btn');
+      const terminateBtn = document.getElementById('terminate-sessions-btn');
+
+      filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          const filter = chip.getAttribute('data-filter');
+          
+          filterChips.forEach(c => {
+            c.classList.remove('bg-secondary', 'text-on-secondary', 'font-semibold', 'shadow-sm');
+            c.classList.add('bg-surface-container', 'text-on-surface-variant');
+          });
+          chip.classList.add('bg-secondary', 'text-on-secondary', 'font-semibold', 'shadow-sm');
+          chip.classList.remove('bg-surface-container', 'text-on-surface-variant');
+
+          auditItems.forEach(item => {
+            const cat = item.getAttribute('data-category');
+            if (filter === 'all' || cat === filter) {
+              item.style.display = 'flex';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          refreshBtn.classList.add('rotate-180');
+          setTimeout(() => {
+            refreshBtn.classList.remove('rotate-180');
+          }, 400);
+        });
+      }
+
+      if (terminateBtn) {
+        terminateBtn.addEventListener('click', () => {
+          if (confirm('Konfirmasi: Putuskan semua sesi aktif di perangkat lain? Anda akan tetap masuk di iPhone ini.')) {
+            terminateBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span> Sesi Lain Telah Diputus';
+            terminateBtn.classList.remove('text-error', 'bg-error-container/20');
+            terminateBtn.classList.add('text-secondary', 'bg-surface-container-high');
+            terminateBtn.disabled = true;
+          }
+        });
+      }
+    })();
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.3)]" data-active-classes="text-secondary"><div class="h-16 px-space-xs flex items-center justify-around"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">space_dashboard</span><span class="font-label-caps text-label-caps">Beranda</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pasar" href="#"><span class="material-symbols-outlined text-[22px]">candlestick_chart</span><span class="font-label-caps text-label-caps">Pasar</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="bot-trading" href="#"><span class="material-symbols-outlined text-[22px]">smart_toy</span><span class="font-label-caps text-label-caps">Bot</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="portofolio" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-caps text-label-caps">Portofolio</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pengaturan" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-caps text-label-caps">Akun</span></a></div></nav></body></html>

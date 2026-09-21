@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>GAIN - Niaga Koin Terminal</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#181c24", "secondary-fixed-dim": "#7bd0ff", "on-background": "#dfe2ee", "secondary": "#7bd0ff", "on-secondary-container": "#00374d", "primary-container": "#3198dc", "surface-dim": "#0f131c", "tertiary-container": "#7c87f3", "surface": "#0f131c", "surface-bright": "#353942", "on-secondary-fixed-variant": "#004c69", "surface-container-high": "#262a33", "on-primary-fixed-variant": "#004b73", "on-primary-container": "#002c47", "on-primary-fixed": "#001d31", "error": "#ffb4ab", "outline-variant": "#3f4850", "on-error-container": "#ffdad6", "on-primary": "#003351", "on-tertiary": "#131e8c", "primary-fixed-dim": "#93ccff", "on-tertiary-fixed-variant": "#2f3aa3", "inverse-on-surface": "#2c3039", "on-surface-variant": "#bfc7d2", "tertiary-fixed": "#e0e0ff", "surface-container-highest": "#31353e", "outline": "#89929b", "secondary-container": "#00a6e0", "tertiary": "#bdc2ff", "on-error": "#690005", "on-secondary": "#00354a", "on-surface": "#dfe2ee", "inverse-surface": "#dfe2ee", "error-container": "#93000a", "secondary-fixed": "#c4e7ff", "on-tertiary-fixed": "#000767", "background": "#0f131c", "tertiary-fixed-dim": "#bdc2ff", "surface-container-lowest": "#0a0e16", "primary": "#93ccff", "surface-tint": "#93ccff", "inverse-primary": "#006398", "on-tertiary-container": "#081486", "on-secondary-fixed": "#001e2c", "surface-container": "#1c2028", "surface-variant": "#31353e", "primary-fixed": "#cce5ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-mobile": "0.75rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-dense": "0.5rem", "margin": "1.5rem" }, fontFamily: { "body-lg": ["Inter"], "ticker-lg": ["JetBrains Mono"], "headline-md": ["Inter"], "label-caps": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "ticker-xl": ["JetBrains Mono"], "headline-lg": ["Inter"], "ticker-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "ticker-md": ["JetBrains Mono"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "ticker-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }], "label-caps": ["11px", { lineHeight: "14px", fontWeight: "600" }], "headline-lg-mobile": ["22px", { lineHeight: "30px", fontWeight: "600" }], "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "ticker-xl": ["32px", { lineHeight: "40px", fontWeight: "700" }], "headline-lg": ["30px", { lineHeight: "38px", fontWeight: "600" }], "ticker-sm": ["11px", { lineHeight: "14px", fontWeight: "500" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "ticker-md": ["14px", { lineHeight: "20px", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#0f131c;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 5rem);}.pt-safe{padding-top:env(safe-area-inset-top, 0px);}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-xs"><div class="flex items-center gap-space-xs min-w-0 flex-shrink-0"><img alt="GAIN Monogram Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1eclB7tX9CuaySQk92XyTdqK6y8r6eBDaYKc2BVkmdsmTPtaNFJBmzjRkaLctl5Hx9I1WxKXfAIxWk8nD_rrfP4PQNgDqQF0T0rgvyWaYF-o4o2c70MzKq-jEf3IllZemg7SeVWyc-WyBPtl6GkI6zDCm9EmGtB-SRlYhPO3KmlaQxI2XkS_iPqLboUgdsevBEiN0T3IkbocrFM7Bl40hGndlBu5StDAgt1YnI7EKkgKDXYvvTqx"/><div class="flex flex-col justify-center select-none"><span class="font-headline-md text-headline-md tracking-tight text-on-surface leading-none font-bold">GAIN</span><span class="font-ticker-sm text-ticker-sm text-primary tracking-widest leading-tight uppercase font-medium">NIAGA KOIN</span></div></div><div class="flex items-center gap-space-xs flex-1 justify-center px-space-xs overflow-hidden"><div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-high/80 backdrop-blur-md"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-ticker-sm text-ticker-sm text-tertiary font-semibold tracking-wide whitespace-nowrap">PAPER</span><span class="hidden sm:inline font-ticker-sm text-ticker-sm text-on-surface-variant font-normal">12ms</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Notifikasi Sistem" class="w-11 h-11 relative rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface active:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Interactive Reset Simulation Modal Dialog (Hidden by Default) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-margin-mobile bg-surface-container-lowest/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200" id="reset-modal">
+<div class="w-full max-w-sm rounded-xl bg-surface-container p-space-md shadow-2xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">restart_alt</span>
+<span class="font-headline-md text-headline-md text-on-surface">Reset Saldo Virtual</span>
+</div>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface" id="close-reset-modal" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Kembalikan akun Paper Trading ke saldo awal 10,000.00 USDT. Riwayat eksekusi bot virtual akan diarsipkan.
+      </p>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Saldo Reset:</span>
+<span class="font-ticker-md text-ticker-md text-primary font-bold">10,000.00 USDT</span>
+</div>
+<div class="flex items-center gap-space-xs mt-2">
+<button class="flex-1 py-2.5 rounded-lg bg-surface-container-high text-on-surface font-body-md text-body-md hover:bg-surface-bright transition-colors" id="cancel-reset-btn" type="button">
+          Batal
+        </button>
+<button class="flex-1 py-2.5 rounded-lg bg-primary-container text-on-primary font-body-md text-body-md font-semibold hover:brightness-110 transition-all flex items-center justify-center gap-1.5" id="confirm-reset-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+          Konfirmasi
+        </button>
+</div>
+</div>
+</div>
+<div class="px-margin-mobile py-space-sm flex flex-col gap-space-md">
+<!-- 1. Mode Simulation & Environment Notice Banner -->
+<section class="flex flex-col gap-2.5">
+<!-- Environment Switcher -->
+<div class="flex items-center justify-between bg-surface-container-lowest p-1 rounded-xl">
+<!-- Paper Toggle Button (Active) -->
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container-high text-tertiary flex items-center justify-center gap-1.5 shadow-sm transition-all" type="button">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-ticker-sm text-ticker-sm font-semibold tracking-wider uppercase">Mode Simulasi (Paper)</span>
+</button>
+<!-- Live Trading Switch (Locked Regulatory Compliance) -->
+<div class="relative group flex-1">
+<button class="w-full py-1.5 px-3 rounded-lg text-on-surface-variant/40 flex items-center justify-center gap-1.5 cursor-not-allowed" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="font-ticker-sm text-ticker-sm font-medium">Live Trading</span>
+</button>
+</div>
+</div>
+<!-- Simulator Notice Banner with Insight Framing -->
+<div class="bg-surface-container-low rounded-xl p-space-sm flex items-start gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-tertiary-container/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-tertiary text-[20px]">science</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-wider">Lingkungan Latihan Virtual</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">Latensi: 14ms</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 leading-snug">
+            Simulasi order virtual tanpa risiko dana riil. Order dicocokkan dengan orderbook live exchange tanpa transfer kapital.
+          </p>
+</div>
+</div>
+</section>
+<!-- 2. Virtual Portfolio Total Balance Card -->
+<section class="rounded-xl bg-surface-container-low p-space-md relative overflow-hidden shadow-lg flex flex-col gap-space-md">
+<div class="absolute -top-16 -right-16 w-36 h-36 bg-primary-container/10 rounded-full blur-2xl pointer-events-none"></div>
+<!-- Card Top: Label & Eye Mask Toggle -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">account_balance_wallet</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Total Estimasi Saldo Virtual</span>
+</div>
+<button aria-label="Sembunyikan Saldo" class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" id="toggle-balance-btn" type="button">
+<span class="material-symbols-outlined text-[18px]" id="eye-icon">visibility</span>
+</button>
+</div>
+<!-- Balance Figures -->
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-2">
+<span class="font-ticker-xl text-ticker-xl text-on-surface tracking-tight" id="balance-display">10,000.00</span>
+<span class="font-ticker-md text-ticker-md text-secondary font-semibold">USDT</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant" id="fiat-display">≈ Rp 158.450.000</span>
+<span class="font-label-caps text-label-caps bg-surface-container-high px-1.5 py-0.5 rounded text-on-surface-variant">KURS BI 15.845</span>
+</div>
+</div>
+<!-- 24h PnL Pill Badge -->
+<div class="flex items-center gap-2 self-start bg-surface-container-high px-2.5 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[18px]">trending_up</span>
+<span class="font-ticker-sm text-ticker-sm text-primary font-bold">+412.50 USDT (+4.12% 24j)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">· 22 Order Berhasil</span>
+</div>
+<!-- 3 Touch-Target Compliant Action Buttons (>= 44px height) -->
+<div class="grid grid-cols-3 gap-space-xs pt-1">
+<!-- Reset Saldo -->
+<button class="min-h-[44px] px-2 rounded-lg bg-surface-container-high hover:bg-surface-bright active:scale-95 text-on-surface flex flex-col items-center justify-center gap-0.5 transition-all" id="open-reset-btn" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">restart_alt</span>
+<span class="font-label-caps text-label-caps">Reset Saldo</span>
+</button>
+<!-- + Buat Bot Baru (Primary Sky CTA) -->
+<button class="min-h-[44px] px-2 rounded-lg bg-primary hover:brightness-110 active:scale-95 text-on-primary flex flex-col items-center justify-center gap-0.5 font-medium transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-primary">add_circle</span>
+<span class="font-label-caps text-label-caps font-bold text-on-primary">+ Bot Baru</span>
+</button>
+<!-- Riwayat Order -->
+<button class="min-h-[44px] px-2 rounded-lg bg-surface-container-high hover:bg-surface-bright active:scale-95 text-on-surface flex flex-col items-center justify-center gap-0.5 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">receipt_long</span>
+<span class="font-label-caps text-label-caps">Riwayat</span>
+</button>
+</div>
+</section>
+<!-- 3. Active Bot Operations Carousel / List -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-on-surface">Bot Aktif</span>
+<span class="font-ticker-sm text-ticker-sm px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-semibold">2 Running · 1 Paused</span>
+</div>
+<a class="font-body-sm text-body-sm text-secondary hover:underline flex items-center gap-0.5" href="#">
+          Lihat Semua
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- Bot Cards Stack -->
+<div class="flex flex-col gap-2.5">
+<!-- Bot 1: BTC Trend Scalper v2 -->
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col gap-3 transition-transform active:scale-[0.99]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[24px]">smart_toy</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">BTC Trend Scalper v2</span>
+<span class="font-label-caps text-label-caps bg-surface-container-high px-1.5 py-0.5 rounded text-secondary-fixed-dim">BINANCE</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">RSI Reversal + EMA 20/50</span>
+</div>
+</div>
+<!-- Status Running Dot -->
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-ticker-sm text-ticker-sm text-primary font-bold">RUNNING</span>
+</div>
+</div>
+<!-- Bot Metrics Bar -->
+<div class="grid grid-cols-2 gap-2 bg-surface-container-low p-2.5 rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">PnL 24 Jam</span>
+<span class="font-ticker-md text-ticker-md text-primary font-bold mt-0.5">+284.20 USDT (+2.84%)</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Win Rate / Trades</span>
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold mt-0.5">14/18 Win (77.8%)</span>
+</div>
+</div>
+<!-- Bot Actions -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-1 text-on-surface-variant font-ticker-sm text-ticker-sm">
+<span class="material-symbols-outlined text-[16px]">timer</span>
+<span>Siklus: 15m · Terakhir order 3m lalu</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button aria-label="Jeda Bot" class="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">pause</span>
+</button>
+<button aria-label="Pengaturan Bot" class="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bot 2: ETH Grid Accumulator -->
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col gap-3 transition-transform active:scale-[0.99]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[24px]">grid_view</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">ETH Grid Accumulator</span>
+<span class="font-label-caps text-label-caps bg-surface-container-high px-1.5 py-0.5 rounded text-tertiary">TOKOCRYPTO</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dynamic Grid 15-Levels</span>
+</div>
+</div>
+<!-- Status Running -->
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-ticker-sm text-ticker-sm text-primary font-bold">RUNNING</span>
+</div>
+</div>
+<!-- Bot Metrics Bar -->
+<div class="grid grid-cols-2 gap-2 bg-surface-container-low p-2.5 rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">PnL 24 Jam</span>
+<span class="font-ticker-md text-ticker-md text-primary font-bold mt-0.5">+128.30 USDT (+1.28%)</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Win Rate / Trades</span>
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold mt-0.5">9/11 Win (81.8%)</span>
+</div>
+</div>
+<!-- Bot Actions -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-1 text-on-surface-variant font-ticker-sm text-ticker-sm">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Spread: 0.35% · 4 Limit Aktif</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button aria-label="Jeda Bot" class="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">pause</span>
+</button>
+<button aria-label="Pengaturan Bot" class="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bot 3: SOL Momentum Breakout (PAUSED) -->
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col gap-2.5 opacity-90">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">speed</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface leading-tight">SOL Momentum Breakout</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Donchian 20 High/Low Channel</span>
+</div>
+</div>
+<!-- Status Paused Pill -->
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-highest">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-ticker-sm text-ticker-sm text-error font-bold">PAUSED</span>
+</div>
+</div>
+<!-- Alert Note -->
+<div class="bg-surface-container-low px-3 py-2 rounded-lg flex items-center justify-between gap-2">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-error text-[18px] flex-shrink-0">shield</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Proteksi: Stop-loss auto hit (-1.5%)</span>
+</div>
+<button class="font-label-caps text-label-caps text-secondary font-semibold hover:underline flex-shrink-0" type="button">
+              RESUME
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Market Pulse & Mini Tickers with Sparklines -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-on-surface">Pantauan Pasar Terkoneksi</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">Feed WS: 20tps</span>
+</div>
+<!-- 3 Market Pulse Cards -->
+<div class="grid grid-cols-3 gap-2">
+<!-- BTC Tile -->
+<div class="rounded-xl bg-surface-container-low p-2.5 flex flex-col justify-between gap-1 shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-ticker-sm text-ticker-sm font-bold text-on-surface">BTC</span>
+<span class="font-label-caps text-label-caps text-primary">+2.45%</span>
+</div>
+<!-- Mini Sparkline Inline SVG -->
+<svg class="w-full h-7 overflow-visible my-0.5" fill="none" preserveaspectratio="none" viewbox="0 0 100 24">
+<path class="text-primary" d="M0,20 Q20,16 35,18 T70,8 T100,2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+<path class="text-primary/10" d="M0,20 Q20,16 35,18 T70,8 T100,2 L100,24 L0,24 Z" fill="currentColor"></path>
+</svg>
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">$64,280.50</span>
+</div>
+<!-- ETH Tile -->
+<div class="rounded-xl bg-surface-container-low p-2.5 flex flex-col justify-between gap-1 shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-ticker-sm text-ticker-sm font-bold text-on-surface">ETH</span>
+<span class="font-label-caps text-label-caps text-primary">+1.80%</span>
+</div>
+<!-- Mini Sparkline Inline SVG -->
+<svg class="w-full h-7 overflow-visible my-0.5" fill="none" preserveaspectratio="none" viewbox="0 0 100 24">
+<path class="text-primary" d="M0,22 Q25,18 45,10 T80,12 T100,4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+<path class="text-primary/10" d="M0,22 Q25,18 45,10 T80,12 T100,4 L100,24 L0,24 Z" fill="currentColor"></path>
+</svg>
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">$3,450.10</span>
+</div>
+<!-- SOL Tile -->
+<div class="rounded-xl bg-surface-container-low p-2.5 flex flex-col justify-between gap-1 shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-ticker-sm text-ticker-sm font-bold text-on-surface">SOL</span>
+<span class="font-label-caps text-label-caps text-error">-0.65%</span>
+</div>
+<!-- Mini Sparkline Crimson Inline SVG -->
+<svg class="w-full h-7 overflow-visible my-0.5" fill="none" preserveaspectratio="none" viewbox="0 0 100 24">
+<path class="text-error" d="M0,4 Q25,6 45,14 T75,12 T100,20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+<path class="text-error/10" d="M0,4 Q25,6 45,14 T75,12 T100,20 L100,24 L0,24 Z" fill="currentColor"></path>
+</svg>
+<span class="font-ticker-sm text-ticker-sm font-semibold text-on-surface">$148.20</span>
+</div>
+</div>
+</section>
+<!-- 5. Real-Time Risk Engine & Execution Stream -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[20px]">security</span>
+<span class="font-headline-md text-headline-md text-on-surface">Log Proteksi &amp; Eksekusi</span>
+</div>
+<span class="font-ticker-sm text-ticker-sm text-secondary font-medium">Real-Time Audit</span>
+</div>
+<!-- Feed Container -->
+<div class="rounded-xl bg-surface-container-low p-space-sm flex flex-col gap-2">
+<!-- Feed Item 1: BUY EXECUTION -->
+<div class="p-2.5 rounded-lg bg-surface-container flex items-start gap-2.5">
+<div class="w-7 h-7 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-primary text-[16px]">arrow_downward</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<span class="font-ticker-sm text-ticker-sm font-bold text-primary">BUY BTC/USDT · SIMULATED</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">3m lalu</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm mt-0.5">
+<span>Filled @ $64,120.00</span>
+<span>Slip: 0.02% · Fee: 0.075 USDT</span>
+</div>
+</div>
+</div>
+<!-- Feed Item 2: RISK ENGINE CHECK PASS -->
+<div class="p-2.5 rounded-lg bg-surface-container flex items-start gap-2.5">
+<div class="w-7 h-7 rounded bg-tertiary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified_user</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<span class="font-ticker-sm text-ticker-sm font-bold text-tertiary">RISK ENGINE: PASS</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">3m lalu</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 leading-tight">
+              Alokasi posisi 250 USDT valid &lt;5% batas maksimal portofolio per koin.
+            </p>
+</div>
+</div>
+<!-- Feed Item 3: TAKE-PROFIT SELL -->
+<div class="p-2.5 rounded-lg bg-surface-container flex items-start gap-2.5">
+<div class="w-7 h-7 rounded bg-secondary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-secondary text-[16px]">call_made</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<span class="font-ticker-sm text-ticker-sm font-bold text-secondary">SELL ETH/USDT · TAKE-PROFIT</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">18m lalu</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-ticker-sm text-ticker-sm mt-0.5">
+<span>Closed @ $3,465.00</span>
+<span class="text-primary font-bold">+1.9% Net Gain</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Security & Connection Guard Footer Card -->
+<section class="rounded-xl bg-surface-container-high/60 p-space-sm flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-secondary text-[20px]">encrypted</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-ticker-sm text-ticker-sm font-bold text-on-surface uppercase">Proteksi Brankas Kunci API</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+          Trade-Only API Key (AES-256). Izin penarikan dana diblokir total secara sistematis demi keamanan aset Anda.
+        </p>
+</div>
+</section>
+</div>
+<!-- Client-Side Micro-Interactions Script -->
+<script>
+    (function () {
+      // 1. Balance Mask / Unmask Toggle
+      const toggleBalanceBtn = document.getElementById('toggle-balance-btn');
+      const eyeIcon = document.getElementById('eye-icon');
+      const balanceDisplay = document.getElementById('balance-display');
+      const fiatDisplay = document.getElementById('fiat-display');
+      let isMasked = false;
+
+      if (toggleBalanceBtn && balanceDisplay && fiatDisplay) {
+        toggleBalanceBtn.addEventListener('click', function () {
+          isMasked = !isMasked;
+          if (isMasked) {
+            balanceDisplay.textContent = '••••••••';
+            fiatDisplay.textContent = '≈ Rp •••••••••••';
+            eyeIcon.textContent = 'visibility_off';
+          } else {
+            balanceDisplay.textContent = '10,000.00';
+            fiatDisplay.textContent = '≈ Rp 158.450.000';
+            eyeIcon.textContent = 'visibility';
+          }
+        });
+      }
+
+      // 2. Virtual Balance Reset Modal Triggering
+      const openResetBtn = document.getElementById('open-reset-btn');
+      const closeResetBtn = document.getElementById('close-reset-modal');
+      const cancelResetBtn = document.getElementById('cancel-reset-btn');
+      const confirmResetBtn = document.getElementById('confirm-reset-btn');
+      const resetModal = document.getElementById('reset-modal');
+
+      function openModal() {
+        if (!resetModal) return;
+        resetModal.classList.remove('opacity-0', 'pointer-events-none');
+        resetModal.classList.add('opacity-100');
+      }
+
+      function closeModal() {
+        if (!resetModal) return;
+        resetModal.classList.remove('opacity-100');
+        resetModal.classList.add('opacity-0', 'pointer-events-none');
+      }
+
+      if (openResetBtn) openResetBtn.addEventListener('click', openModal);
+      if (closeResetBtn) closeResetBtn.addEventListener('click', closeModal);
+      if (cancelResetBtn) cancelResetBtn.addEventListener('click', closeModal);
+
+      if (confirmResetBtn) {
+        confirmResetBtn.addEventListener('click', function () {
+          if (balanceDisplay) balanceDisplay.textContent = '10,000.00';
+          if (fiatDisplay) fiatDisplay.textContent = '≈ Rp 158.450.000';
+          closeModal();
+        });
+      }
+    })();
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.3)]" data-active-classes="text-secondary"><div class="h-16 px-space-xs flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 transition-colors text-secondary" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">space_dashboard</span><span class="font-label-caps text-label-caps">Beranda</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pasar" href="#"><span class="material-symbols-outlined text-[22px]">candlestick_chart</span><span class="font-label-caps text-label-caps">Pasar</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="bot-trading" href="#"><span class="material-symbols-outlined text-[22px]">smart_toy</span><span class="font-label-caps text-label-caps">Bot</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="portofolio" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-caps text-label-caps">Portofolio</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pengaturan" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-caps text-label-caps">Akun</span></a></div></nav></body></html>
