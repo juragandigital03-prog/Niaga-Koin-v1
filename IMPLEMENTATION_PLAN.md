@@ -6,8 +6,8 @@
 
 | Fase | Nama | Status |
 |---|---|---|
-| 0 | Discovery & Audit | **DONE** (dokumen ini) |
-| 1 | Foundation | NOT STARTED — menunggu konfirmasi stack (lihat blocker) |
+| 0 | Discovery & Audit | **DONE** |
+| 1 | Foundation | **DONE** |
 | 2 | Authentication | NOT STARTED |
 | 3 | Market Data | NOT STARTED |
 | 4 | Paper Trading Core | NOT STARTED |
@@ -18,25 +18,27 @@
 | 9 | Local Release | NOT STARTED |
 | 10 | VPS/Domain Readiness | NOT STARTED |
 
-## Blocker Sebelum Fase 1
+## Keputusan Dikonfirmasi (2026-09-21)
 
-Keputusan stack teknologi (Bagian 5, `PROJECT_STATUS.md`) perlu dikonfirmasi pengguna:
-1. Setuju stack sederhana (React+TS, NestJS/Express modular monolith + 1 worker, PostgreSQL saja, Redis opsional, secrets via `.env`)?
-2. Exchange pertama: Binance (disebut sebagai kandidat di PRD/SDD) — dikonfirmasi?
-3. Fitur whitelist alamat withdrawal (dari desain, tidak ada di SRS) — masuk scope MVP atau ditunda ke fase lanjutan?
-4. Saldo virtual awal paper trading — berapa (SRS/PRD tidak menetapkan angka pasti; mockup dashboard menampilkan `10,000.00 USDT` sebagai nilai reset default)?
+Pengguna mengonfirmasi memakai default yang diusulkan untuk seluruh blocker Fase 0:
+1. Stack sederhana: React+TS, NestJS modular monolith (satu proses, worker terpisah baru ditambah saat Fase 3 butuh), PostgreSQL saja, Redis ditunda sampai benar-benar perlu, secrets via `.env`.
+2. Exchange pertama: **Binance**.
+3. Fitur whitelist alamat withdrawal: **tidak masuk MVP** (default aman — sistem tidak mengkustodi dana, selaras SRS FR-USER-002).
+4. Saldo virtual awal paper trading: **10,000 USDT**.
 
-Tanpa jawaban #1, Fase 1 tidak bisa dimulai secara aman (risiko membangun kerangka yang salah dan memboroskan kredit — bertentangan dengan ATURAN EFISIENSI KREDIT AI).
+Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 
-## Fase 1 — Foundation (rencana, belum dieksekusi)
-- Inisialisasi monorepo: `backend/`, `frontend/`, `worker/` (atau digabung di backend sebagai proses terpisah jika NestJS), `docker-compose.yml` (PostgreSQL [+Redis jika dikonfirmasi]).
-- Setup TypeScript, ESLint, Prettier, test runner (Jest) di backend & frontend.
-- Health check endpoint `/api/v1/health`.
-- Struktur logging terstruktur dasar (JSON).
-- `.env.example` diisi nilai nyata sesuai stack final.
-- Migration tool dipilih (Prisma disebut sebagai kandidat SDD §6.2) + migration pertama (tabel `users` minimal).
-- README diperbarui dengan instruksi run lokal yang benar-benar bisa diikuti.
-- Frontend: scaffold Vite+React+TS, import token `docs/design/stitch-export/gain_trading_terminal/DESIGN.md` ke `tailwind.config`, replikasi 1 layar (dashboard) sebagai komponen React statis (belum terhubung API) untuk validasi kesetiaan desain.
+## Fase 1 — Foundation — **DONE** (2026-09-21)
+- Monorepo `backend/` (NestJS+TS+Prisma) dan `frontend/` (Vite+React+TS+Tailwind) diinisialisasi. `worker/` sengaja belum dibuat — ditambah Fase 3.
+- `docker-compose.yml` — PostgreSQL 16, bind `127.0.0.1` saja.
+- TypeScript strict, ESLint, Prettier, Jest (backend) / Vitest (frontend) — lint & typecheck bersih di kedua proyek.
+- `GET /api/v1/health` — cek konektivitas DB, melaporkan `tradingMode`/`liveTradingEnabled` eksplisit.
+- Logging terstruktur JSON (nestjs-pino) dengan redaction header sensitif.
+- Kill switch keselamatan finansial: boot gagal jika `LIVE_TRADING_ENABLED=true` (diuji unit + smoke test manual).
+- Prisma + migration pertama (`init_users`) diterapkan ke PostgreSQL lokal.
+- README diperbarui — instruksi run lokal diverifikasi benar-benar berjalan (bukan asumsi).
+- Frontend: token desain disalin verbatim dari `code.html` Stitch ke `tailwind.config.js`; halaman Dashboard direplikasi sebagai komponen React statis (Header, PaperModeBanner, BalanceCard, BotList, ResetBalanceModal) dengan data mock eksplisit — divalidasi via screenshot Playwright dan dibandingkan visual terhadap `screen.png` referensi, hasil cocok struktural.
+- Bukti test: lihat `CHANGELOG.md` Fase 1 dan laporan STATUS pada percakapan.
 
 ## Fase 2 — Authentication (rencana)
 - FR-AUTH-001 (register+OTP), FR-AUTH-002 (login), FR-AUTH-004 (RBAC). FR-AUTH-003 (2FA) jika dikonfirmasi masuk MVP awal (PRD menandainya Should Have).

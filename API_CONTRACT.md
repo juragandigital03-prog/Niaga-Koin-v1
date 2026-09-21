@@ -50,7 +50,7 @@ Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 ## System
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| GET | `/health` | 1 | TODO |
+| GET | `/health` | 1 | **DONE** — `backend/src/health/health.controller.ts`. Response: `{status, timestamp, database, tradingMode, liveTradingEnabled}` |
 
 ## Belum Ditentukan
 - Endpoint whitelist alamat withdrawal (lihat `PROJECT_STATUS.md` §3.2) — **tidak didefinisikan sampai ada keputusan produk**.

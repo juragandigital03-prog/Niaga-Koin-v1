@@ -1,0 +1,28 @@
+# GAIN (Niaga Koin) — local development infrastructure.
+# Only PostgreSQL for now (Fase 1). Redis/other services are added in a
+# later fase only if a feature actually needs them (see PROJECT_STATUS.md §5
+# — avoid infra that isn't earning its keep yet).
+#
+# Usage: docker compose up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gain_dev
+      POSTGRES_PASSWORD: gain_dev_local
+      POSTGRES_DB: gain_dev
+    ports:
+      # Bound to localhost only — never expose the database to the network
+      # (see master prompt: "Jangan mengekspos PostgreSQL ... ke internet publik").
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - gain_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U gain_dev -d gain_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gain_postgres_data:

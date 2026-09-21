@@ -1,0 +1,26 @@
+// GAIN (Niaga Koin) — Prisma schema
+// Fase 1 (Foundation): hanya model minimal yang dibutuhkan untuk health check
+// dan fondasi auth (Fase 2). Model trading (bots, orders, positions, dst.)
+// ditambahkan bertahap sesuai SDD §6, bukan sekaligus, sesuai aturan
+// incremental di master prompt.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String   @map("password_hash")
+  status       String   @default("pending_verification")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}

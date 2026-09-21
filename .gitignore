@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — NEVER commit real .env files
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Build output
+dist/
+build/
+frontend/dist/
+backend/dist/
+*.tsbuildinfo
+
+# Prisma
+backend/prisma/*.db
+backend/prisma/migrations/dev/
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Test/coverage
+coverage/
+.nyc_output/
+
+# Editor/OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Docker volumes (if any local bind mounts)
+.docker-data/

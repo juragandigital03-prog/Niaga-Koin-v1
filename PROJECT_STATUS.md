@@ -2,7 +2,7 @@
 
 > Dokumen ini adalah ringkasan proyek yang dapat digunakan kembali di setiap fase, sesuai ATURAN EFISIENSI KREDIT AI pada MASTER_PROMPT. **Jangan membaca ulang seluruh PRD/SRS/SDD di fase berikutnya — baca dokumen ini dulu.**
 >
-> Terakhir diperbarui: 2026-09-21 (Fase 0 — Discovery/Audit)
+> Terakhir diperbarui: 2026-09-21 (Fase 1 — Foundation, DONE)
 
 ---
 
@@ -21,19 +21,26 @@ Live trading **tidak diimplementasikan dan tidak boleh diaktifkan** pada fase ma
 
 ```
 Niaga-Koin-v1/
-├── README.md
-├── PROJECT_STATUS.md          (baru — dokumen ini)
-├── IMPLEMENTATION_PLAN.md     (baru)
-├── FEATURE_MATRIX.md          (baru)
-├── API_CONTRACT.md            (baru — skeleton, belum ada implementasi)
-├── .env.example                (baru — skeleton)
-├── CHANGELOG.md                (baru)
-└── docs/
-    ├── reference/               (5 dokumen sumber + master prompt)
-    └── design/stitch-export/    (10 mockup layar statis + design tokens + logo)
+├── README.md                   (instruksi run lokal — sudah bisa diikuti)
+├── PROJECT_STATUS.md
+├── IMPLEMENTATION_PLAN.md
+├── FEATURE_MATRIX.md
+├── API_CONTRACT.md
+├── .env.example
+├── CHANGELOG.md
+├── docker-compose.yml           (PostgreSQL lokal)
+├── docs/
+│   ├── reference/                (5 dokumen sumber + master prompt)
+│   └── design/stitch-export/     (10 mockup layar statis + design tokens + logo)
+├── backend/                      (NestJS + Prisma + PostgreSQL — modular monolith)
+│   ├── src/{config,health,prisma}/
+│   ├── prisma/schema.prisma + migrations/
+│   └── test/ (e2e)
+└── frontend/                     (React + TS + Vite + Tailwind)
+    └── src/{components,pages,lib,styles}/
 ```
 
-Belum ada: `backend/`, `frontend/`, `worker/`, `docker-compose.yml`, migration, test suite, CI config, package manager manifest apa pun (tidak ada `package.json`, `requirements.txt`, `go.mod`, dll).
+**Belum ada:** proses `worker/` terpisah (baru dibutuhkan mulai Fase 3 — market data), CI config. Model database masih minimal (`User` saja) — model trading (bots, orders, dst.) ditambah bertahap per fase sesuai kebutuhan fitur, bukan sekaligus.
 
 ## 3. Status Desain UI (Penting)
 
@@ -73,33 +80,45 @@ Tidak ada mockup untuk: Registrasi/Login/OTP (F-AUTH-01), 2FA setup (F-AUTH-02, 
 
 ## 4. Status Backend
 
-**Tidak ada backend sama sekali.** Tidak ada kerangka kerja, tidak ada koneksi database, tidak ada satu endpoint pun. Seluruh SCOPE MVP di master prompt (auth, market data, paper trading, bot lifecycle, dst.) perlu dibangun dari nol pada Fase 2 dan seterusnya.
+**Fase 1 (Foundation) selesai.** Backend NestJS modular monolith berjalan, dengan:
+- `GET /api/v1/health` — mengecek konektivitas database, mengembalikan `tradingMode: "paper-only"` dan `liveTradingEnabled: false` secara eksplisit di setiap response.
+- **Kill switch keselamatan finansial di level boot:** `backend/src/config/env.validation.ts` membuat aplikasi **menolak untuk start** jika `LIVE_TRADING_ENABLED=true` — diverifikasi dengan test otomatis dan smoke test manual (proses exit dengan error, bukan diam-diam mengizinkan).
+- Prisma + PostgreSQL terhubung, migration pertama (`init_users`) diterapkan.
+- Logging terstruktur JSON (pino) dengan redaction header `authorization`/`cookie`.
+- Helmet (security headers) + CORS aktif di `main.ts`.
 
-## 5. Keputusan Arsitektur — Perlu Konfirmasi Sebelum Fase 1
+Modul fitur (auth, exchange, bot, dst.) **belum dibangun** — itu scope Fase 2 dan seterusnya. Model database masih hanya `User` minimal.
 
-SDD v1.0 mengusulkan stack yang relatif berat untuk MVP (Node.js/NestJS + Go + Python + PostgreSQL + TimescaleDB + Redis + RabbitMQ + Vault + microservice-ish worker terpisah). Master prompt secara eksplisit melarang menambah RabbitMQ/TimescaleDB/Go/service terpisah **kecuali kompleksitasnya sudah diperlukan untuk MVP**, dan mengarahkan memilih stack berdasarkan **codebase aktual** — yang saat ini kosong.
+## 5. Keputusan Arsitektur — DIKONFIRMASI (2026-09-21)
 
-**Usulan stack MVP yang disederhanakan** (mengikuti prinsip "modular monolith paling sederhana", tetap konsisten dengan pilihan bahasa di SDD agar tidak menyimpang jauh dari dokumen sumber):
-- **Frontend:** React + TypeScript + Vite + Tailwind CSS (menyalin token `DESIGN.md` ke `tailwind.config`) — konsisten dengan SDD §4 dan langsung kompatibel dengan class Tailwind yang sudah dipakai di `code.html`.
-- **Backend:** Node.js + TypeScript (NestJS atau Express — NestJS sesuai SDD §4 dan cocok untuk struktur modular monolith) sebagai satu proses API + satu proses worker terpisah (market data polling + strategy/risk/paper-trading loop) — **tanpa Go/Python terpisah dulu**, karena strategi indikator dasar (RSI/MACD/dll.) bisa dihitung di TypeScript untuk MVP.
-- **Database:** PostgreSQL saja (tanpa TimescaleDB dulu — candle history volume MVP kecil, bisa ditambah ekstensi nanti tanpa migrasi besar).
-- **Cache/Queue:** Redis hanya jika diperlukan untuk session/rate-limit/pub-sub event ke worker (kemungkinan besar dibutuhkan untuk update real-time dashboard) — **tanpa RabbitMQ** dulu, Redis pub/sub atau polling DB cukup untuk skala MVP satu pengguna developer.
-- **Secrets:** environment variables untuk development; **bukan** HashiCorp Vault dulu (over-engineering untuk MVP lokal) — dengan catatan tegas bahwa ini harus di-upgrade sebelum ada dana riil/produksi publik.
-- **Exchange:** Binance public REST/WebSocket untuk market data spot; API key trade-only untuk pembacaan saldo (read-only) — order execution riil tetap `BLOCKED`.
+Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh SDD v1.0). Ini **penyimpangan terdokumentasi dari SDD** (sesuai instruksi "Dokumentasikan setiap penyimpangan dari SDD"), dipilih untuk menghindari over-engineering di MVP:
 
-Ini adalah **penyimpangan terdokumentasi dari SDD** (sesuai instruksi "Dokumentasikan setiap penyimpangan dari SDD") demi menghindari over-engineering di MVP. **Menunggu konfirmasi pengguna sebelum Fase 1 dimulai** karena ini memengaruhi scope, biaya waktu, dan struktur proyek jangka panjang.
+- **Frontend:** React + TypeScript + Vite + Tailwind CSS. Token desain (`tailwind.config.js`) disalin **verbatim** dari config Tailwind yang di-generate Stitch di `code.html`, bukan ditulis ulang dari `DESIGN.md` — karena `code.html` adalah yang benar-benar menghasilkan `screen.png` yang disetujui (ada sedikit perbedaan `borderRadius` antara `DESIGN.md` dan `code.html`; `code.html` dijadikan ground truth, lihat komentar di `frontend/tailwind.config.js`).
+- **Backend:** Node.js + TypeScript (NestJS), modular monolith satu proses. Worker terpisah (market data, strategy/risk/paper-trading loop) **belum dibuat** — ditambahkan mulai Fase 3 saat benar-benar dibutuhkan, bukan sekarang.
+- **Database:** PostgreSQL saja (tanpa TimescaleDB).
+- **Cache/Queue:** Redis **belum ditambahkan** — akan ditambah saat sebuah fitur (real-time dashboard/worker coordination) benar-benar membutuhkannya.
+- **Secrets:** environment variables (`.env`, digitignore) untuk development; **bukan** HashiCorp Vault. Harus di-upgrade sebelum ada dana riil/produksi publik.
+- **Exchange:** Binance dikonfirmasi sebagai exchange pertama (public REST/WS untuk market data; API key trade-only untuk saldo read-only saat Fase 3+). Order execution riil tetap `BLOCKED`.
+- **Saldo virtual awal paper trading:** dikonfirmasi **10,000 USDT** (mengikuti nilai default di mockup desain) — sudah dipakai sebagai konstanta di `.env.example` (`PAPER_TRADING_DEFAULT_BALANCE_USDT`) dan di komponen `ResetBalanceModal` frontend.
+- **Fitur whitelist alamat withdrawal + timelock 24 jam** (dari desain, gap di SRS): **default aman diambil — TIDAK diimplementasikan di MVP.** Sistem tidak mengkustodi dana sehingga fitur ini tidak punya dasar kebutuhan yang jelas (selaras dengan catatan SRS FR-USER-002). Tetap `BLOCKED` di `FEATURE_MATRIX.md` sampai ada keputusan eksplisit sebaliknya dari Product Owner.
 
 ## 6. Aturan Keselamatan Finansial — Status
 
-Belum ada kode, jadi belum ada pelanggaran. Aturan berikut **wajib ditegakkan sejak baris kode pertama**:
-- Paper trading = mode default & satu-satunya mode aktif.
-- Kolom `is_paper` di setiap tabel transaksional sejak migrasi pertama.
-- Tidak ada endpoint/kode yang memanggil order eksekusi riil exchange.
-- Tidak ada secret di source/log/DB plaintext — `.env` di `.gitignore` sejak commit pertama kode.
+- Paper trading = satu-satunya mode yang ada di kode saat ini (belum ada modul trading sama sekali, jadi belum ada modul live untuk disalahgunakan).
+- `LIVE_TRADING_ENABLED` ditegakkan sebagai kill switch di level boot aplikasi (lihat Bagian 4) — **diuji otomatis** (`env.validation.spec.ts`) dan **diverifikasi manual** (proses gagal start saat `LIVE_TRADING_ENABLED=true`).
+- Endpoint `/api/v1/health` secara eksplisit melaporkan `tradingMode`/`liveTradingEnabled` — status paper/live tidak pernah ambigu bagi siapa pun yang memonitor sistem.
+- Belum ada endpoint/kode yang memanggil order eksekusi riil exchange (belum ada modul exchange sama sekali).
+- Tidak ada secret di source/log/DB plaintext: `backend/.env` (berisi kredensial dev lokal) ada di `.gitignore` root sejak commit pertama kode; log pino me-redact header `authorization`/`cookie`.
+- Kolom `is_paper` di tabel transaksional **belum relevan** — belum ada tabel order/trade/position (baru dibuat Fase 4).
 
 ## 7. Cara Menjalankan Proyek Saat Ini
 
-**Belum bisa dijalankan** — belum ada aplikasi. Instruksi local development akan ditulis di Fase 1 (Foundation) setelah kerangka backend/frontend ada.
+**Bisa dijalankan penuh secara lokal** — lihat `README.md` untuk instruksi lengkap. Ringkasan:
+1. `docker compose up -d` (PostgreSQL).
+2. `cd backend && npm install && cp ../.env.example .env && npx prisma migrate deploy && npm run start:dev` → `http://localhost:3000/api/v1/health`.
+3. `cd frontend && npm install && npm run dev` → `http://localhost:5173` (dashboard replika desain, data mock).
+
+Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test, e2e test (backend, melawan PostgreSQL nyata), production build (backend & frontend), boot smoke test, dan screenshot visual dashboard dibandingkan terhadap `screen.png` referensi desain — hasil cocok secara struktural (lihat `CHANGELOG.md` Fase 1).
 
 ## 8. Dokumen Terkait
 
