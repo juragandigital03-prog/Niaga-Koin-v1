@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { fetchJsonWithRetry } from '../fetch-with-retry';
+import { fetchJsonWithRetry } from '../../common/http/fetch-with-retry';
 import { Candle, CandleInterval, MarketDataProvider, Ticker } from '../market-data-provider.interface';
 
 interface BinanceTickerPriceResponse {

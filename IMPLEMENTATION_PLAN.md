@@ -10,7 +10,8 @@
 | 1 | Foundation | **DONE** |
 | 2 | Authentication | **DONE** |
 | 3 | Market Data | **DONE** |
-| 4 | Exchange Account Connection + Paper Trading Core | NOT STARTED |
+| 4a | Exchange Account Connection | **DONE** |
+| 4b | Paper Trading Core | NOT STARTED |
 | 5 | Bot & Strategy | NOT STARTED |
 | 6 | Portfolio & Dashboard | NOT STARTED |
 | 7 | History, Notification, Admin | NOT STARTED |
@@ -61,9 +62,19 @@ Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 - **Konektivitas Binance sungguhan TIDAK dapat diverifikasi di sesi ini** — sandbox pengembangan memblokir egress ke `api.binance.com` (kebijakan organisasi, dikonfirmasi via `curl` yang mengembalikan `403 connect_rejected`). Logic terverifikasi penuh lewat unit test (mock fetch) + e2e test (fake provider ter-inject) + smoke test manual yang membuktikan jalur fail-safe 503 bekerja. **Pengguna wajib mengecek konektivitas nyata di mesin sendiri** sebelum menganggap fitur ini selesai diverifikasi end-to-end (`curl https://api.binance.com/api/v3/ping`).
 - Test: 14 unit test (retry helper, Binance provider parsing, service caching/validation) + 5 e2e test baru (melawan fake provider) — total 40 unit + 11 e2e lulus di seluruh backend.
 
-## Fase 4 — Exchange Account Connection + Paper Trading Core (rencana)
-- **Exchange Account Connection (FR-EXC-001/002):** simpan koneksi API key pengguna (`EXCHANGE_ACCOUNTS`, `API_CREDENTIALS` — dienkripsi, `permission_scope` divalidasi trade-only, tolak key dengan izin withdrawal). Prasyarat untuk `BOTS.exchange_account_id` di Fase 5 (SDD §6.1) — dipindah ke sini (bukan Fase 3) karena market data publik tidak butuh API key sama sekali (SRS §3.8).
-- **Paper Trading Core:** saldo virtual, tabel `orders`/`trades`/`positions`/`balances` dengan kolom `is_paper`, simulator eksekusi (fee & slippage eksplisit, ditandai TBD jika belum diputuskan), validasi saldo/quantity/precision.
+## Fase 4a — Exchange Account Connection — **DONE** (2026-09-22)
+- Dipecah dari Fase 4 gabungan menjadi dua vertical slice terpisah (koneksi exchange, lalu paper trading) agar tiap patch tetap kecil dan mudah ditinjau, sesuai aturan efisiensi kredit.
+- Refactor kecil (bukan fitur baru): `fetchJsonWithRetry`/`UpstreamUnavailableError` dipindah dari `market-data/` ke `common/http/` agar dipakai bersama oleh Market Data (Fase 3) dan Exchange (Fase 4a) — mengurangi duplikasi retry/timeout logic. Ditambah dukungan `isNonRetryableStatus` (mis. `401`/`400` — auth ditolak, tidak ada gunanya di-retry).
+- `CredentialsEncryptionService` (`common/crypto/`) — AES-256-GCM, kunci dari `CREDENTIALS_ENCRYPTION_KEY` (fail-fast jika kosong, app menolak start). Diuji: round-trip, IV acak per enkripsi, deteksi tamper (GCM auth tag), isolasi antar kunci berbeda.
+- `ExchangeAdapter` interface (SDD §5.2, authenticated) + `BinanceExchangeAdapter` — signed request HMAC-SHA256 ke `GET /api/v3/account`, membaca `canTrade`/`canWithdraw`. Auth ditolak (`400`/`401`) → gagal cepat tanpa retry; kegagalan jaringan → retry lalu `UpstreamUnavailableError`.
+- `ExchangeService`: BR-KEY-001 ditegakkan (key `canWithdraw=true` **selalu** ditolak `422`, tidak pernah disimpan); kredensial dienkripsi sebelum disimpan; query `list`/`disconnect` difilter `userId` di level WHERE clause (bukan dicek setelah query — satu user tidak bisa melihat/menghapus akun user lain, dibuktikan lewat e2e test isolasi).
+- Model Prisma baru: `ExchangeAccount`, `ApiCredential` (migration `exchange_accounts`).
+- Endpoint baru (`JwtAuthGuard`): `POST /exchange-accounts`, `GET /exchange-accounts`, `DELETE /exchange-accounts/{id}`.
+- **Konektivitas Binance sungguhan TIDAK dapat diverifikasi di sesi ini** (alasan sama seperti Fase 3 — sandbox blokir egress). Logic teruji lewat unit test (adapter dengan mock fetch) + e2e test (fake `ExchangeAdapter` ter-inject) + smoke test manual yang membuktikan `503` fail-safe saat Binance benar-benar tak terjangkau. Pengguna wajib verifikasi nyata di mesin sendiri.
+- Test: +19 unit test (encryption 6, Binance adapter 5, ExchangeService 7, refactor retry-helper +2) + 6 e2e test baru — total 60 unit + 17 e2e lulus di seluruh backend.
+
+## Fase 4b — Paper Trading Core (rencana)
+- Saldo virtual, tabel `orders`/`trades`/`positions`/`balances` dengan kolom `is_paper`, simulator eksekusi (fee & slippage eksplisit, ditandai TBD jika belum diputuskan), validasi saldo/quantity/precision.
 - Isolasi teknis paper vs live ditegakkan di level DB + service + API sejak awal.
 
 ## Fase 5 — Bot & Strategy (rencana)

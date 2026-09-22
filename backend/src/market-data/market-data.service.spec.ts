@@ -1,6 +1,7 @@
 import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { MarketDataService } from './market-data.service';
-import { MarketDataUnavailableError, Ticker } from './market-data-provider.interface';
+import { Ticker } from './market-data-provider.interface';
+import { UpstreamUnavailableError } from '../common/http/upstream-unavailable.error';
 
 const CONFIG: Record<string, string> = {
   MARKET_DATA_SUPPORTED_SYMBOLS: 'BTCUSDT,ETHUSDT',
@@ -62,7 +63,7 @@ describe('MarketDataService', () => {
   });
 
   it('maps a provider outage to 503 instead of leaking the internal error (fail-safe)', async () => {
-    provider.getTicker.mockRejectedValue(new MarketDataUnavailableError('unreachable'));
+    provider.getTicker.mockRejectedValue(new UpstreamUnavailableError('unreachable'));
 
     await expect(service.getTicker('BTCUSDT')).rejects.toBeInstanceOf(ServiceUnavailableException);
   });

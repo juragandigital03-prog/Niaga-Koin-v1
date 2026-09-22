@@ -1,6 +1,6 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status:** Fase 2 (Authentication) dan Fase 3 (Market Data) selesai — endpoint auth dan market data inti berfungsi nyata. Sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
+> **Status:** Fase 2 (Auth), Fase 3 (Market Data), dan Fase 4a (Exchange Account Connection) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
@@ -32,9 +32,11 @@ Sumber data: Binance public REST (`BinanceMarketDataProvider`, `GET /api/v3/tick
 ## Exchange (koneksi API key milik pengguna — beda dari Market Data publik di atas)
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| POST | `/exchange-accounts` | 4 | TODO |
-| GET | `/exchange-accounts` | 4 | TODO |
-| DELETE | `/exchange-accounts/{id}` | 4 | TODO |
+| POST | `/exchange-accounts` | 4a | **DONE** — dilindungi `JwtAuthGuard`. `{exchangeName: "binance", apiKey, apiSecret}` → validasi via signed call ke Binance `/api/v3/account`. Sukses: `201 {id, connectionStatus}`. Key dengan izin withdrawal aktif: `422 {error: "INVALID_PERMISSION_SCOPE"}` (BR-KEY-001, tanpa terkecuali). Kredensial tidak valid: `400 {error: "INVALID_CREDENTIALS"}`. Exchange tidak terjangkau: `503` (fail-safe — key TIDAK PERNAH disimpan tanpa tervalidasi). `exchangeName` di luar whitelist (`binance` satu-satunya untuk saat ini): `400`. |
+| GET | `/exchange-accounts` | 4a | **DONE** — daftar milik pengguna yang login saja (difilter `user_id`), tidak pernah menyertakan credential. |
+| DELETE | `/exchange-accounts/{id}` | 4a | **DONE** — `204` jika berhasil, `404` jika bukan milik pengguna yang login (tidak membocorkan keberadaan akun user lain). Kredensial terenkripsi ikut dihapus (hard delete, bukan soft-delete — user secara eksplisit minta putus koneksi). **TODO (Fase 5):** hentikan bot yang bergantung pada koneksi ini sebelum hapus (FR-EXC-002) — belum relevan karena bot belum ada. |
+
+Kredensial disimpan terenkripsi AES-256-GCM (`CredentialsEncryptionService`, `backend/src/common/crypto/`) — kunci dari `CREDENTIALS_ENCRYPTION_KEY`, aplikasi menolak start tanpa variabel ini. **Konektivitas Binance sungguhan untuk endpoint ini juga belum diverifikasi di sesi ini** (alasan sama seperti Market Data — sandbox blokir egress) — logic teruji penuh lewat fake adapter ter-inject; verifikasi nyata wajib di mesin pengguna sebelum dianggap tervalidasi produksi.
 
 ## Bots
 | Method | Path | Fase | Status |

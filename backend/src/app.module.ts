@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MarketDataModule } from './market-data/market-data.module';
+import { ExchangeModule } from './exchange/exchange.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MarketDataModule } from './market-data/market-data.module';
     AuthModule,
     UsersModule,
     MarketDataModule,
+    ExchangeModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

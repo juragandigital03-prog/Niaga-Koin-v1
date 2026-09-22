@@ -6,9 +6,9 @@ import {
   Candle,
   MARKET_DATA_PROVIDER,
   MarketDataProvider,
-  MarketDataUnavailableError,
   Ticker,
 } from '../src/market-data/market-data-provider.interface';
+import { UpstreamUnavailableError } from '../src/common/http/upstream-unavailable.error';
 
 /**
  * Uses an injected fake provider rather than the real Binance API: this
@@ -22,7 +22,7 @@ class FakeMarketDataProvider implements MarketDataProvider {
 
   async getTicker(symbol: string): Promise<Ticker> {
     if (this.shouldFail) {
-      throw new MarketDataUnavailableError('simulated outage');
+      throw new UpstreamUnavailableError('simulated outage');
     }
     return { symbol, price: 65000.12, asOf: new Date().toISOString() };
   }

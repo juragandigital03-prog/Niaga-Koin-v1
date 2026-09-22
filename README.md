@@ -107,6 +107,22 @@ curl "http://localhost:3000/api/v1/market-data/candles/BTCUSDT?interval=1h&limit
 
 **Penting:** endpoint ini benar-benar memanggil Binance (`api.binance.com`) dari mesin Anda. Kalau mendapat `503`, itu berarti backend tidak bisa menjangkau Binance (bukan bug kode) — cek dulu dengan `curl https://api.binance.com/api/v3/ping` di luar aplikasi untuk memastikan koneksi internet/firewall Anda mengizinkannya.
 
+## Menghubungkan Akun Exchange (Fase 4a)
+
+```bash
+curl -X POST http://localhost:3000/api/v1/exchange-accounts \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"exchangeName":"binance","apiKey":"<api-key-anda>","apiSecret":"<api-secret-anda>"}'
+```
+
+Gunakan API key **trade-only** (tanpa izin withdrawal) — key dengan izin withdrawal akan selalu ditolak (`422`). Sama seperti market data, endpoint ini benar-benar memanggil Binance dari mesin Anda; `503` berarti Binance tidak terjangkau, bukan bug.
+
+```bash
+curl http://localhost:3000/api/v1/exchange-accounts -H "Authorization: Bearer <accessToken>"          # daftar koneksi Anda
+curl -X DELETE http://localhost:3000/api/v1/exchange-accounts/<id> -H "Authorization: Bearer <accessToken>"  # putuskan koneksi
+```
+
 ## Menjalankan Frontend
 
 ```bash
@@ -161,6 +177,9 @@ docker compose down -v
 | `npx prisma migrate dev` gagal konek | Database belum siap saat migration dijalankan | Tunggu healthcheck `docker compose ps` menunjukkan status `healthy`, lalu ulangi |
 | `GET /market-data/ticker/{symbol}` mengembalikan `503` | Backend tidak bisa menjangkau Binance (firewall/proxy/internet mati) | Cek `curl https://api.binance.com/api/v3/ping` di luar aplikasi; ini bukan bug kode — ini fail-safe yang disengaja saat exchange tak terjangkau |
 | `GET /market-data/ticker/{symbol}` mengembalikan `400` | Symbol di luar whitelist `MARKET_DATA_SUPPORTED_SYMBOLS` | Cek `GET /market-data/symbols` untuk daftar yang didukung, atau tambahkan symbol ke env tersebut |
+| Backend gagal start, error `Missing required environment variable: CREDENTIALS_ENCRYPTION_KEY` | `.env` dibuat sebelum Fase 4a | Salin ulang dari `.env.example` terbaru, atau tambahkan `CREDENTIALS_ENCRYPTION_KEY` manual |
+| `POST /exchange-accounts` mengembalikan `503` | Backend tidak bisa menjangkau Binance untuk memvalidasi API key | Sama seperti market data — cek `curl https://api.binance.com/api/v3/ping`; API key TIDAK disimpan sampai berhasil tervalidasi |
+| `POST /exchange-accounts` mengembalikan `422 INVALID_PERMISSION_SCOPE` | API key yang dipakai punya izin withdrawal aktif | Buat API key baru di Binance dengan izin **trade-only** saja (nonaktifkan izin withdrawal) |
 
 ## Struktur Proyek
 

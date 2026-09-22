@@ -6,9 +6,9 @@ import {
   CandleInterval,
   MARKET_DATA_PROVIDER,
   MarketDataProvider,
-  MarketDataUnavailableError,
   Ticker,
 } from './market-data-provider.interface';
+import { UpstreamUnavailableError } from '../common/http/upstream-unavailable.error';
 
 const VALID_INTERVALS: CandleInterval[] = ['1m', '5m', '15m', '1h', '4h', '1d'];
 const MAX_CANDLE_LIMIT = 500;
@@ -100,7 +100,7 @@ export class MarketDataService {
    * explicit "data pasar tidak tersedia" state instead of silently guessing.
    */
   private handleProviderFailure(err: unknown, context: string): never {
-    if (err instanceof MarketDataUnavailableError) {
+    if (err instanceof UpstreamUnavailableError) {
       this.logger.warn({ context, cause: String(err.cause) }, 'Market data provider unavailable');
       throw new ServiceUnavailableException('Data pasar sedang tidak tersedia, coba lagi sebentar lagi');
     }

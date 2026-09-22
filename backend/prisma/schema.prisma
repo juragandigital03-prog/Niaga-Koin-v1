@@ -42,7 +42,8 @@ model User {
   createdAt           DateTime   @default(now()) @map("created_at")
   updatedAt           DateTime   @updatedAt @map("updated_at")
 
-  otpChallenges OtpChallenge[]
+  otpChallenges    OtpChallenge[]
+  exchangeAccounts ExchangeAccount[]
 
   @@map("users")
 }
@@ -68,4 +69,44 @@ model OtpChallenge {
 
   @@index([userId, purpose])
   @@map("otp_challenges")
+}
+
+enum ExchangeConnectionStatus {
+  connected
+  failed
+}
+
+/// Fase 4: koneksi API key milik pengguna ke satu exchange (Binance — satu-
+/// satunya exchange dikonfirmasi, lihat PROJECT_STATUS.md §5). Kredensial
+/// mentah TIDAK PERNAH disimpan di sini — hanya lewat ApiCredential yang
+/// terenkripsi (SDD §6.2, NFR-SEC-005/006).
+model ExchangeAccount {
+  id               String                   @id @default(uuid())
+  userId           String                   @map("user_id")
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exchangeName     String                   @map("exchange_name")
+  connectionStatus ExchangeConnectionStatus @map("connection_status")
+  connectedAt      DateTime?                @map("connected_at")
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
+
+  credential ApiCredential?
+
+  @@index([userId])
+  @@map("exchange_accounts")
+}
+
+/// `permissionScope` mencatat hasil pengecekan izin API key SAAT
+/// disimpan (BR-KEY-001: key dengan izin withdrawal tidak pernah
+/// diterima — ditolak sebelum baris ini pernah dibuat).
+model ApiCredential {
+  id                 String          @id @default(uuid())
+  exchangeAccountId  String          @unique @map("exchange_account_id")
+  exchangeAccount    ExchangeAccount @relation(fields: [exchangeAccountId], references: [id], onDelete: Cascade)
+  encryptedApiKey    String          @map("encrypted_api_key")
+  encryptedApiSecret String          @map("encrypted_api_secret")
+  permissionScope    String          @map("permission_scope")
+  rotatedAt          DateTime        @default(now()) @map("rotated_at")
+
+  @@map("api_credentials")
 }

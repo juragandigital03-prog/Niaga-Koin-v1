@@ -1,5 +1,5 @@
-import { fetchJsonWithRetry } from './fetch-with-retry';
-import { MarketDataUnavailableError } from './market-data-provider.interface';
+import { fetchJsonWithRetry, NonRetryableHttpError } from './fetch-with-retry';
+import { UpstreamUnavailableError } from './upstream-unavailable.error';
 
 function jsonResponse(body: unknown, ok = true, status = 200) {
   return { ok, status, json: async () => body } as Response;
@@ -40,12 +40,12 @@ describe('fetchJsonWithRetry', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('throws MarketDataUnavailableError instead of hanging forever once retries are exhausted', async () => {
+  it('throws UpstreamUnavailableError instead of hanging forever once retries are exhausted', async () => {
     global.fetch = jest.fn().mockRejectedValue(new Error('down'));
 
     await expect(
       fetchJsonWithRetry('https://example.test/ping', { timeoutMs: 1000, maxRetries: 2 }),
-    ).rejects.toBeInstanceOf(MarketDataUnavailableError);
+    ).rejects.toBeInstanceOf(UpstreamUnavailableError);
     expect(global.fetch).toHaveBeenCalledTimes(3); // initial + 2 retries
   });
 
@@ -54,6 +54,40 @@ describe('fetchJsonWithRetry', () => {
 
     await expect(
       fetchJsonWithRetry('https://example.test/ping', { timeoutMs: 1000, maxRetries: 0 }),
-    ).rejects.toBeInstanceOf(MarketDataUnavailableError);
+    ).rejects.toBeInstanceOf(UpstreamUnavailableError);
+  });
+
+  it('stops immediately on a status matched by isNonRetryableStatus, without exhausting retries', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(jsonResponse({ code: -2015, msg: 'Invalid API-key' }, false, 401));
+
+    await expect(
+      fetchJsonWithRetry(
+        'https://example.test/account',
+        { timeoutMs: 1000, maxRetries: 3 },
+        (status) => status === 401,
+      ),
+    ).rejects.toBeInstanceOf(NonRetryableHttpError);
+    expect(global.fetch).toHaveBeenCalledTimes(1); // no retries wasted on a definitive rejection
+  });
+
+  it('exposes the parsed body on NonRetryableHttpError for the caller to inspect', async () => {
+    expect.assertions(3);
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(jsonResponse({ code: -2015, msg: 'Invalid API-key' }, false, 401));
+
+    try {
+      await fetchJsonWithRetry(
+        'https://example.test/account',
+        { timeoutMs: 1000, maxRetries: 0 },
+        (status) => status === 401,
+      );
+    } catch (err) {
+      expect(err).toBeInstanceOf(NonRetryableHttpError);
+      expect((err as NonRetryableHttpError).status).toBe(401);
+      expect((err as NonRetryableHttpError).body).toEqual({ code: -2015, msg: 'Invalid API-key' });
+    }
   });
 });

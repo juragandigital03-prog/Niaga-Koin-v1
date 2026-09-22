@@ -2,6 +2,24 @@
 
 Format: setiap entri merepresentasikan satu fase kerja (bukan setiap commit kecil).
 
+## [Fase 4a] Exchange Account Connection — 2026-09-22
+### Ditambahkan
+- `CredentialsEncryptionService` (`backend/src/common/crypto/`) — AES-256-GCM, kunci dari `CREDENTIALS_ENCRYPTION_KEY` (hash SHA-256 dari passphrase apa pun → kunci 32-byte). Aplikasi menolak start tanpa variabel ini (diverifikasi manual: pesan error eksplisit, bukan crash tak jelas).
+- `ExchangeAdapter` interface + `BinanceExchangeAdapter` — signed request HMAC-SHA256 ke `GET /api/v3/account` Binance untuk memvalidasi API key & membaca `canTrade`/`canWithdraw`. Auth ditolak (`400`/`401`) gagal cepat tanpa buang retry; kegagalan jaringan tetap retry lalu `503`.
+- `ExchangeService` + `POST/GET/DELETE /api/v1/exchange-accounts` — BR-KEY-001 ditegakkan (key `canWithdraw=true` selalu `422 INVALID_PERMISSION_SCOPE`, tidak pernah disimpan); kredensial tidak valid → `400 INVALID_CREDENTIALS`; exchange tak terjangkau → `503`; query difilter `userId` di WHERE clause (bukan post-hoc check).
+- Model Prisma baru: `ExchangeAccount`, `ApiCredential` (migration `exchange_accounts`).
+- Env baru: `CREDENTIALS_ENCRYPTION_KEY`, `EXCHANGE_REQUEST_TIMEOUT_MS`, `EXCHANGE_MAX_RETRIES`.
+
+### Refactor Kecil (bukan fitur baru)
+- `fetchJsonWithRetry` dan error kegagalan upstream dipindah dari `market-data/fetch-with-retry.ts` ke `common/http/fetch-with-retry.ts` + `common/http/upstream-unavailable.error.ts` (nama digeneralisasi dari `MarketDataUnavailableError` ke `UpstreamUnavailableError`) — dipakai bersama oleh Market Data dan Exchange, menghindari dua implementasi retry/timeout yang nyaris identik. Ditambah dukungan `isNonRetryableStatus` untuk kasus seperti 401 (auth ditolak — retry tidak akan pernah berhasil, beda dengan kegagalan jaringan sementara).
+
+### Keterbatasan Diketahui (konsisten dengan Fase 3, didokumentasikan bukan disembunyikan)
+- Konektivitas Binance sungguhan untuk `checkPermissions` **tidak diverifikasi di sesi ini** — sandbox pengembangan memblokir egress ke `api.binance.com`. Diuji penuh lewat unit test (mock fetch, termasuk verifikasi bahwa secret tidak pernah masuk ke URL) dan e2e test (fake `ExchangeAdapter` ter-inject). Pengguna wajib verifikasi manual di mesin sendiri.
+
+### Pengujian (hasil pada sesi ini)
+- `npx tsc --noEmit` PASS, `npx eslint` PASS (0 error, warning `no-explicit-any` di file test saja), `npx jest` PASS (60/60 unit test, +19 baru: enkripsi 6, Binance adapter 5, ExchangeService 7, retry-helper +2 untuk `isNonRetryableStatus`), `npx jest --config test/jest-e2e.json` PASS (17/17 e2e test, +6 baru: connect/list/disconnect penuh, tolak izin withdrawal, tolak kredensial tidak valid, tolak exchange tidak didukung, isolasi antar-user, wajib auth), `npx nest build` PASS.
+- Smoke test manual: (1) boot tanpa `CREDENTIALS_ENCRYPTION_KEY` → aplikasi gagal start dengan pesan error eksplisit; (2) alur register→verify→login→connect exchange lengkap via curl — `POST /exchange-accounts` mengembalikan `503` (Binance tak terjangkau dari sandbox, perilaku fail-safe yang benar); (3) exchange tidak didukung (`okx`) → `400`; (4) tanpa token → `401`.
+
 ## [Fase 3] Market Data — 2026-09-22
 ### Ditambahkan
 - `MarketDataProvider` interface (`backend/src/market-data/market-data-provider.interface.ts`) — subset read-only dari pola Exchange Adapter SDD §5.2, sengaja tidak termasuk `placeOrder`/`getBalance` (butuh API key pengguna, Fase 4).

@@ -9,7 +9,7 @@
 | F-AUTH-02 | 2FA | Disebut sebagai item di `pusat_keamanan_audit_trail_scr_08` (tanpa alur setup lengkap) | `/api/v1/auth/2fa/verify` | **DITUNDA** (keputusan sadar — Should Have, bukan Must Have, lihat `API_CONTRACT.md`) | — | F-AUTH-01 (selesai) | Alur setup 2FA belum didesain penuh; dipertimbangkan lagi bersama Fase 7 |
 | F-AUTH-04 | RBAC (role user/admin) | — | `RolesGuard`/`@Roles()` (infrastruktur) | **DONE** (infrastruktur); **PARTIAL** (belum ada endpoint admin nyata untuk uji e2e) | **DONE** (unit test 403/allow), e2e penuh menunggu endpoint admin pertama | F-AUTH-01 | Rendah — logic diuji, hanya menunggu konsumen nyata (Fase 7) |
 | F-USER-01 | Profil Pengguna | *(belum ada mockup)* | `GET /api/v1/users/me` (baca) — **DONE**; `PATCH` (ubah) — TODO | **PARTIAL** | **DONE** untuk bagian yang ada (e2e) | F-AUTH-01 (selesai) | — |
-| F-EXC-01 | Koneksi API Exchange | `exchange_api_connection_brankas_kunci_scr_05` | `/api/v1/exchange-accounts` | TODO (Fase 4) | TODO | F-AUTH-01 (selesai), Binance API | Validasi trade-only wajib; kebocoran key = risiko finansial |
+| F-EXC-01 | Koneksi API Exchange | `exchange_api_connection_brankas_kunci_scr_05` | `/api/v1/exchange-accounts` | **DONE** (backend; belum terhubung UI — Fase 6) | **DONE** (7 unit test + 6 e2e test; **konektivitas Binance sungguhan belum diverifikasi di sesi ini**, sama seperti F-MKT-01) | F-AUTH-01 (selesai), Binance API | Validasi trade-only wajib (BR-KEY-001, ditegakkan & diuji — key withdrawal selalu ditolak 422); kredensial dienkripsi AES-256-GCM at-rest |
 | F-MKT-01 | Data Harga & Candle | *(embedded di beberapa layar, belum ada layar mandiri)* | `GET /market-data/symbols`, `/ticker/{symbol}`, `/candles/{symbol}` | **DONE** (REST; WebSocket real-time ditunda — lihat catatan di bawah) | **DONE** (14 unit test + 5 e2e test dengan fake provider; **konektivitas Binance sungguhan belum diverifikasi di sesi ini** — sandbox blokir egress, wajib dicek manual di mesin pengguna) | Exchange API eksternal (Binance, publik, tanpa API key) | Ketergantungan uptime pihak ketiga — dimitigasi: retry terbatas + cache + fail-safe 503 |
 | F-STRAT-01/02 | Pilih & Kustomisasi Strategi | `buat_bot_baru_validasi_risk_engine` | `/api/v1/bots` (embedded config) | TODO | TODO | F-MKT-01 | Rentang parameter valid masih `TBD` di SRS |
 | F-BOT-01 | Lifecycle Bot | `buat_bot_baru_validasi_risk_engine`, `detail_bot_analitik_performa` | `/api/v1/bots/*` | TODO | TODO | F-EXC-01, F-STRAT-01 | — |
@@ -26,12 +26,12 @@
 | Live Trading (seluruh modul) | — | Toggle "Live Trading" tampil terkunci di dashboard | Trading Engine (live path) | **BLOCKED** (by design, jangan diaktifkan) | — | Kepatuhan hukum Bappebti/OJK | Jangan pernah diaktifkan tanpa persetujuan eksplisit |
 
 ## Ringkasan
-- **DONE:** 4 (F-SYS-01, F-AUTH-01, F-AUTH-04-infrastruktur, F-MKT-01)
+- **DONE:** 5 (F-SYS-01, F-AUTH-01, F-AUTH-04-infrastruktur, F-MKT-01, F-EXC-01)
 - **PARTIAL:** 1 (F-USER-01 — baca selesai, ubah belum)
-- **TODO:** 11
+- **TODO:** 10
 - **DITUNDA (keputusan sadar):** 1 (F-AUTH-02 — 2FA, Should Have)
 - **TBD:** 1 (F-SUB-01)
 - **EXCLUDED:** 1 (F-WL-01 — keputusan sadar, bukan celah)
 - **BLOCKED:** 1 (Live Trading — permanen sampai kepatuhan hukum selesai)
 
-Fase 1-3 selesai: kerangka backend/frontend berjalan, health check, alur auth inti (register→OTP→login→profil), dan market data (ticker/candle Binance) terverifikasi lewat test otomatis + smoke test manual. **Catatan jujur:** konektivitas Binance sungguhan (bukan mock) belum bisa dibuktikan di sesi ini karena sandbox pengembangan memblokir akses keluar ke `api.binance.com` — pengguna perlu memverifikasi ini sendiri di mesin lokal sebelum F-MKT-01 dianggap 100% tervalidasi produksi. Fitur produk lanjutan (exchange account, bot, paper trading, dst.) mulai Fase 4 — matriks diperbarui baris-per-baris saat masing-masing selesai.
+Fase 1-3 dan Fase 4a selesai: kerangka backend/frontend berjalan, health check, alur auth inti (register→OTP→login→profil), market data (ticker/candle Binance), dan koneksi API key exchange pengguna (validasi trade-only, enkripsi at-rest) terverifikasi lewat test otomatis + smoke test manual. **Catatan jujur:** konektivitas Binance sungguhan (bukan mock) untuk F-MKT-01 dan F-EXC-01 belum bisa dibuktikan di sesi ini karena sandbox pengembangan memblokir akses keluar ke `api.binance.com` — pengguna perlu memverifikasi ini sendiri di mesin lokal sebelum kedua fitur ini dianggap 100% tervalidasi produksi. Fase 4b (Paper Trading Core) dan fitur produk lanjutan (bot, dst.) berikutnya — matriks diperbarui baris-per-baris saat masing-masing selesai.

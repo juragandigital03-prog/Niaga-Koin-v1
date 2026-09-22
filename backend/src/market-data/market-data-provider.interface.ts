@@ -30,13 +30,3 @@ export interface MarketDataProvider {
   getTicker(symbol: string): Promise<Ticker>;
   getCandles(symbol: string, interval: CandleInterval, limit: number): Promise<Candle[]>;
 }
-
-export class MarketDataUnavailableError extends Error {
-  constructor(
-    message: string,
-    readonly cause?: unknown,
-  ) {
-    super(message);
-    this.name = 'MarketDataUnavailableError';
-  }
-}
