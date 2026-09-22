@@ -8,6 +8,8 @@ describe('Health (e2e)', () => {
 
   beforeAll(async () => {
     process.env.DATABASE_URL ??= 'postgresql://gain_dev:gain_dev_local@localhost:5432/gain_dev';
+    process.env.JWT_ACCESS_SECRET ??= 'test-access-secret';
+    process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],

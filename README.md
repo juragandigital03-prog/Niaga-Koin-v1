@@ -67,6 +67,36 @@ curl http://localhost:3000/api/v1/health
 # {"status":"ok","timestamp":"...","database":"ok","tradingMode":"paper-only","liveTradingEnabled":false}
 ```
 
+## Mencoba Alur Autentikasi (Fase 2)
+
+Backend belum punya provider OTP nyata (SMS/email) — kode OTP dev muncul di log terminal backend.
+
+```bash
+# 1. Registrasi
+curl -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"anda@example.com","password":"password123"}'
+# -> {"userId":"...", "status":"pending_verification", "registrationToken":"..."}
+# Cari baris log backend: "[DEV OTP ...] code=XXXXXX"
+
+# 2. Verifikasi OTP (pakai registrationToken dari langkah 1)
+curl -X POST http://localhost:3000/api/v1/auth/verify-otp \
+  -H "Authorization: Bearer <registrationToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"code":"XXXXXX"}'
+
+# 3. Login
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"anda@example.com","password":"password123"}'
+# -> {"accessToken":"...", "refreshToken":"..."}
+
+# 4. Panggil endpoint terproteksi
+curl http://localhost:3000/api/v1/users/me -H "Authorization: Bearer <accessToken>"
+```
+
+Detail lengkap tiap endpoint (rate limit, aturan lockout, dll.) ada di `API_CONTRACT.md`.
+
 ## Menjalankan Frontend
 
 ```bash
@@ -113,6 +143,9 @@ docker compose down -v
 |---|---|---|
 | Backend gagal start, error `Missing required environment variables: DATABASE_URL` | `backend/.env` belum dibuat/salah | `cp .env.example backend/.env`, sesuaikan `DATABASE_URL` |
 | Backend gagal start, error `LIVE_TRADING_ENABLED=true is not permitted` | Variabel live trading sengaja/tidak sengaja diaktifkan | Set `LIVE_TRADING_ENABLED=false` — ini penegakan aturan keselamatan finansial, bukan bug |
+| Backend gagal start, error `Missing required environment variables: ... JWT_ACCESS_SECRET` | `.env` dibuat sebelum Fase 2 (belum ada variabel JWT) | Salin ulang dari `.env.example` terbaru, atau tambahkan `JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET` manual |
+| `POST /auth/login` selalu `401` walau password benar | Akun belum diverifikasi OTP, atau terkunci sementara (5x gagal) | Selesaikan `verify-otp` dulu; jika terkunci, tunggu `LOGIN_LOCKOUT_MINUTES` (default 15 menit) |
+| `POST /auth/register` mengembalikan `500` | Kemungkinan migration Prisma belum diterapkan (`OtpChallenge`/kolom baru belum ada) | Jalankan `npx prisma migrate deploy` |
 | `GET /api/v1/health` mengembalikan `503` | Database tidak menyala atau `DATABASE_URL` salah | Pastikan `docker compose up -d` berjalan dan port 5432 dapat diakses |
 | Port 5432/3000/5173 sudah dipakai | Proses lain sedang berjalan | Hentikan proses lama atau ubah port di `.env`/`vite.config.ts` |
 | `npx prisma migrate dev` gagal konek | Database belum siap saat migration dijalankan | Tunggu healthcheck `docker compose ps` menunjukkan status `healthy`, lalu ulangi |

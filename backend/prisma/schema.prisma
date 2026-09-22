@@ -1,8 +1,14 @@
 // GAIN (Niaga Koin) — Prisma schema
-// Fase 1 (Foundation): hanya model minimal yang dibutuhkan untuk health check
-// dan fondasi auth (Fase 2). Model trading (bots, orders, positions, dst.)
-// ditambahkan bertahap sesuai SDD §6, bukan sekaligus, sesuai aturan
-// incremental di master prompt.
+// Fase 1 (Foundation): model minimal untuk health check.
+// Fase 2 (Authentication): tambah role/lockout ke User, tambah OtpChallenge.
+// Model trading (bots, orders, positions, dst.) ditambahkan bertahap sesuai
+// SDD §6, bukan sekaligus, sesuai aturan incremental di master prompt.
+//
+// Catatan Fase 2: refresh token diterbitkan sebagai JWT stateless (tidak
+// disimpan/di-tracking di database pada fase ini) — penyimpanan sesi yang
+// bisa di-revoke satu-per-satu adalah bagian dari fitur "Pusat Keamanan"
+// (F-SEC-01, Fase 7), bukan dibangun sekarang tanpa endpoint yang
+// memakainya (lihat PROJECT_STATUS.md §5).
 
 generator client {
   provider = "prisma-client-js"
@@ -13,14 +19,53 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  user
+  admin
+}
+
+enum UserStatus {
+  pending_verification
+  active
+  suspended
+}
+
 model User {
-  id           String   @id @default(uuid())
-  email        String?  @unique
-  phone        String?  @unique
-  passwordHash String   @map("password_hash")
-  status       String   @default("pending_verification")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                  String     @id @default(uuid())
+  email               String?    @unique
+  phone               String?    @unique
+  passwordHash        String     @map("password_hash")
+  status              UserStatus @default(pending_verification)
+  role                UserRole   @default(user)
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  otpChallenges OtpChallenge[]
 
   @@map("users")
+}
+
+enum OtpPurpose {
+  registration
+}
+
+/// OTP disimpan sebagai hash (bukan plaintext) — kode asli hanya ada
+/// sesaat di memori saat dibuat dan dikirim lewat OtpProvider (lihat
+/// backend/src/auth/otp/otp-provider.interface.ts).
+model OtpChallenge {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose     OtpPurpose
+  codeHash    String     @map("code_hash")
+  attempts    Int        @default(0)
+  maxAttempts Int        @default(3) @map("max_attempts")
+  expiresAt   DateTime   @map("expires_at")
+  consumedAt  DateTime?  @map("consumed_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@index([userId, purpose])
+  @@map("otp_challenges")
 }

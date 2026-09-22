@@ -2,7 +2,7 @@
 
 > Dokumen ini adalah ringkasan proyek yang dapat digunakan kembali di setiap fase, sesuai ATURAN EFISIENSI KREDIT AI pada MASTER_PROMPT. **Jangan membaca ulang seluruh PRD/SRS/SDD di fase berikutnya — baca dokumen ini dulu.**
 >
-> Terakhir diperbarui: 2026-09-21 (Fase 1 — Foundation, DONE)
+> Terakhir diperbarui: 2026-09-22 (Fase 2 — Authentication, DONE)
 
 ---
 
@@ -80,14 +80,16 @@ Tidak ada mockup untuk: Registrasi/Login/OTP (F-AUTH-01), 2FA setup (F-AUTH-02, 
 
 ## 4. Status Backend
 
-**Fase 1 (Foundation) selesai.** Backend NestJS modular monolith berjalan, dengan:
+**Fase 1 (Foundation) dan Fase 2 (Authentication) selesai.** Backend NestJS modular monolith berjalan, dengan:
 - `GET /api/v1/health` — mengecek konektivitas database, mengembalikan `tradingMode: "paper-only"` dan `liveTradingEnabled: false` secara eksplisit di setiap response.
 - **Kill switch keselamatan finansial di level boot:** `backend/src/config/env.validation.ts` membuat aplikasi **menolak untuk start** jika `LIVE_TRADING_ENABLED=true` — diverifikasi dengan test otomatis dan smoke test manual (proses exit dengan error, bukan diam-diam mengizinkan).
-- Prisma + PostgreSQL terhubung, migration pertama (`init_users`) diterapkan.
+- Prisma + PostgreSQL terhubung, migration diterapkan (`init_users`, `auth_fields`).
 - Logging terstruktur JSON (pino) dengan redaction header `authorization`/`cookie`.
 - Helmet (security headers) + CORS aktif di `main.ts`.
+- **Auth (Fase 2):** `POST /auth/register` (email + password, OTP 6-digit dev-only via `ConsoleOtpProvider`), `POST /auth/verify-otp` (dilindungi token registrasi sementara terpisah dari access token), `POST /auth/login` (JWT access 15m + refresh 7d, lockout 5x gagal → kunci 15 menit), `GET /users/me` (dilindungi `JwtAuthGuard`). RBAC (`RolesGuard`/`@Roles()`) siap dipakai modul lain, diuji unit — belum ada endpoint admin nyata untuk uji e2e penuh (menunggu Fase 7). Rate limiting global + endpoint-level (NFR-SEC-007). Password & kode OTP di-hash (bcryptjs), tidak pernah plaintext.
+- Model database: `User` (+role, lockout), `OtpChallenge`.
 
-Modul fitur (auth, exchange, bot, dst.) **belum dibangun** — itu scope Fase 2 dan seterusnya. Model database masih hanya `User` minimal.
+Modul fitur produk (exchange, bot, paper trading, dst.) **belum dibangun** — itu scope Fase 3 dan seterusnya.
 
 ## 5. Keputusan Arsitektur — DIKONFIRMASI (2026-09-21)
 
@@ -108,7 +110,8 @@ Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh
 - `LIVE_TRADING_ENABLED` ditegakkan sebagai kill switch di level boot aplikasi (lihat Bagian 4) — **diuji otomatis** (`env.validation.spec.ts`) dan **diverifikasi manual** (proses gagal start saat `LIVE_TRADING_ENABLED=true`).
 - Endpoint `/api/v1/health` secara eksplisit melaporkan `tradingMode`/`liveTradingEnabled` — status paper/live tidak pernah ambigu bagi siapa pun yang memonitor sistem.
 - Belum ada endpoint/kode yang memanggil order eksekusi riil exchange (belum ada modul exchange sama sekali).
-- Tidak ada secret di source/log/DB plaintext: `backend/.env` (berisi kredensial dev lokal) ada di `.gitignore` root sejak commit pertama kode; log pino me-redact header `authorization`/`cookie`.
+- Tidak ada secret di source/log/DB plaintext: `backend/.env` (berisi kredensial dev lokal) ada di `.gitignore` root sejak commit pertama kode; log pino me-redact header `authorization`/`cookie` (diverifikasi lagi di Fase 2 — token JWT di header `Authorization` tampil `[Redacted]` di log e2e).
+- Password & kode OTP di-hash (bcryptjs) — tidak pernah plaintext di DB. Error login tidak pernah membedakan "email tidak ada" vs "password salah" (cegah user enumeration).
 - Kolom `is_paper` di tabel transaksional **belum relevan** — belum ada tabel order/trade/position (baru dibuat Fase 4).
 
 ## 7. Cara Menjalankan Proyek Saat Ini
@@ -117,8 +120,9 @@ Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh
 1. `docker compose up -d` (PostgreSQL).
 2. `cd backend && npm install && cp ../.env.example .env && npx prisma migrate deploy && npm run start:dev` → `http://localhost:3000/api/v1/health`.
 3. `cd frontend && npm install && npm run dev` → `http://localhost:5173` (dashboard replika desain, data mock).
+4. Alur auth nyata bisa dicoba lewat curl: `POST /api/v1/auth/register` → baca kode OTP dari log terminal backend → `POST /api/v1/auth/verify-otp` (header `Authorization: Bearer <registrationToken>`) → `POST /api/v1/auth/login` → `GET /api/v1/users/me` (header `Authorization: Bearer <accessToken>`). Detail lengkap di `API_CONTRACT.md`.
 
-Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test, e2e test (backend, melawan PostgreSQL nyata), production build (backend & frontend), boot smoke test, dan screenshot visual dashboard dibandingkan terhadap `screen.png` referensi desain — hasil cocok secara struktural (lihat `CHANGELOG.md` Fase 1).
+Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test, e2e test (backend, melawan PostgreSQL nyata), production build (backend & frontend), boot smoke test, screenshot visual dashboard dibandingkan terhadap `screen.png` referensi desain (Fase 1), dan alur auth penuh via curl manual (Fase 2) — lihat `CHANGELOG.md`.
 
 ## 8. Dokumen Terkait
 

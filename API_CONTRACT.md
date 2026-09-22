@@ -1,21 +1,24 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status: SKELETON.** Belum ada satu endpoint pun yang diimplementasikan (Fase 0 — repo masih kosong). Tabel di bawah adalah kontrak yang direncanakan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. Setelah backend nyata mulai dibangun, dokumen ini wajib disinkronkan dengan OpenAPI/Swagger yang digenerate dari kode (bukan ditulis manual terus-menerus).
+> **Status:** Fase 2 (Authentication) selesai — endpoint auth inti berfungsi nyata. Sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
 ## Auth
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| POST | `/auth/register` | 2 | TODO |
-| POST | `/auth/verify-otp` | 2 | TODO |
-| POST | `/auth/login` | 2 | TODO |
-| POST | `/auth/2fa/verify` | 2 | TODO |
+| POST | `/auth/register` | 2 | **DONE** — `{email, password}` → `201 {userId, status, registrationToken}`. Email saja (bukan telepon — SMS gateway belum dipilih, lihat PROJECT_STATUS.md). Memanggil ulang untuk email yang sama berstatus `pending_verification` berfungsi sebagai resend OTP. |
+| POST | `/auth/verify-otp` | 2 | **DONE** — Header `Authorization: Bearer <registrationToken>`, body `{code}` (6 digit) → `200 {verified: true}`. Salah kode 3x atau kedaluwarsa → daftar ulang untuk kode baru. |
+| POST | `/auth/login` | 2 | **DONE** — `{email, password}` → `200 {accessToken, refreshToken}`. Lockout otomatis setelah `LOGIN_MAX_ATTEMPTS` (default 5) gagal berturut-turut, selama `LOGIN_LOCKOUT_MINUTES` (default 15). |
+| POST | `/auth/2fa/verify` | — | **DITUNDA** (bukan TODO biasa) — FR-AUTH-003 berstatus Should Have di PRD, bukan Must Have; sengaja tidak dibangun di Fase 2 agar slice tetap fokus. Dipertimbangkan lagi bersama fitur Pusat Keamanan (Fase 7). |
+
+Endpoint OTP saat ini **belum terhubung provider pengiriman nyata** — kode dikirim ke log aplikasi saja (`ConsoleOtpProvider`, dev-only, lihat `backend/src/auth/otp/`). Siap diganti begitu Notification Worker (Fase 7) ada.
 
 ## Users
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| GET/PATCH | `/users/me` | 2 | TODO |
+| GET | `/users/me` | 2 | **DONE** — butuh `Authorization: Bearer <accessToken>`. Tidak pernah mengembalikan `passwordHash`. |
+| PATCH | `/users/me` | — | TODO — belum ada kebutuhan konkret field apa yang bisa diubah, ditunda sampai ada UI profil (F-USER-01, belum ada mockup). |
 
 ## Exchange
 | Method | Path | Fase | Status |
@@ -63,3 +66,9 @@ Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 - Error response konsisten, tidak membocorkan detail internal/secret.
 - Endpoint sensitif (login, OTP, trading) punya rate limiting.
 - Operasi start/stop bot bersifat idempotent.
+
+## Infrastruktur Auth Siap Dipakai Modul Lain (sejak Fase 2)
+- `JwtAuthGuard` (`backend/src/auth/guards/jwt-auth.guard.ts`) — pasang `@UseGuards(JwtAuthGuard)` di controller mana pun yang butuh login.
+- `RolesGuard` + `@Roles('admin')` (`backend/src/auth/guards/roles.guard.ts`, `decorators/roles.decorator.ts`) — siap dipasang begitu endpoint admin pertama dibangun (Fase 7). Diuji unit (403 untuk role salah), belum ada endpoint nyata untuk uji e2e penuh — dicatat sebagai utang pembuktian di `FEATURE_MATRIX.md`.
+- `req.user` (dari `JwtAuthGuard`) berisi `{id, role}` — dipakai untuk memfilter query per `user_id` di modul manapun.
+- Rate limit global 60 req/menit (`ThrottlerGuard` di `AppModule`), endpoint auth di-override ke 10 req/menit.

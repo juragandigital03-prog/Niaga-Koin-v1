@@ -8,7 +8,7 @@
 |---|---|---|
 | 0 | Discovery & Audit | **DONE** |
 | 1 | Foundation | **DONE** |
-| 2 | Authentication | NOT STARTED |
+| 2 | Authentication | **DONE** |
 | 3 | Market Data | NOT STARTED |
 | 4 | Paper Trading Core | NOT STARTED |
 | 5 | Bot & Strategy | NOT STARTED |
@@ -40,10 +40,16 @@ Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 - Frontend: token desain disalin verbatim dari `code.html` Stitch ke `tailwind.config.js`; halaman Dashboard direplikasi sebagai komponen React statis (Header, PaperModeBanner, BalanceCard, BotList, ResetBalanceModal) dengan data mock eksplisit — divalidasi via screenshot Playwright dan dibandingkan visual terhadap `screen.png` referensi, hasil cocok struktural.
 - Bukti test: lihat `CHANGELOG.md` Fase 1 dan laporan STATUS pada percakapan.
 
-## Fase 2 — Authentication (rencana)
-- FR-AUTH-001 (register+OTP), FR-AUTH-002 (login), FR-AUTH-004 (RBAC). FR-AUTH-003 (2FA) jika dikonfirmasi masuk MVP awal (PRD menandainya Should Have).
-- Tabel `users`, password hashing (bcrypt/argon2), JWT access+refresh token, middleware auth.
-- Test: registrasi sukses/gagal, login sukses/gagal, lockout setelah N percobaan, isolasi RBAC user vs admin.
+## Fase 2 — Authentication — **DONE** (2026-09-22)
+- FR-AUTH-001 (register + OTP, email saja), FR-AUTH-002 (login + lockout), FR-AUTH-004 (RBAC — infrastruktur, `RolesGuard`/`@Roles()`, belum ada endpoint admin nyata untuk uji e2e penuh).
+- **FR-AUTH-003 (2FA) sengaja ditunda** — Should Have di PRD, bukan Must Have; dipertimbangkan lagi bersama Pusat Keamanan (Fase 7) agar Fase 2 tetap satu vertical slice fokus, bukan scope creep.
+- Password + kode OTP di-hash (bcryptjs, tidak pernah plaintext). JWT access (15m default) + refresh (7d default) — refresh **stateless**, belum ada tabel revoke (disengaja: tidak ada endpoint refresh yang memakainya di fase ini; revoke session jadi bagian Fase 7 Pusat Keamanan, sesuai mockup desain).
+- OTP dikirim lewat `OtpProvider` yang bisa diganti — implementasi Fase 2 hanya `ConsoleOtpProvider` (log, dev-only). Registrasi ulang untuk email yang sama & masih `pending_verification` berfungsi sebagai resend OTP alami (tidak butuh endpoint terpisah).
+- Account lockout: 5 percobaan gagal → kunci 15 menit (default, dapat dikonfigurasi via env — SRS BR-ACC-001 menandai ambang sebagai TBD).
+- Endpoint baru: `POST /auth/register`, `POST /auth/verify-otp` (dilindungi token registrasi sementara terpisah dari access token), `POST /auth/login`, `GET /users/me`.
+- Rate limiting global (`@nestjs/throttler`, 60 req/menit) + override lebih ketat (10 req/menit) di seluruh endpoint auth (NFR-SEC-007).
+- Bug nyata ditemukan & diperbaiki lewat e2e test: `ConfigService.get()` mengembalikan string env mentah, sempat dikirim sebagai `maxAttempts` (Int) ke Prisma tanpa `Number(...)` — lihat `CHANGELOG.md` Fase 2.
+- Test: 26 unit test (AuthService, RolesGuard, JwtStrategy, env validation) + 5 e2e test (alur penuh register→verify→login→me, wrong password, wrong OTP, token-purpose reuse ditolak) — seluruhnya melawan PostgreSQL nyata. Plus smoke test manual via curl.
 
 ## Fase 3 — Market Data (rencana)
 - Adapter Binance public REST/WS untuk harga & candle. Retry/backoff terbatas, timeout, fallback fixture untuk test.
