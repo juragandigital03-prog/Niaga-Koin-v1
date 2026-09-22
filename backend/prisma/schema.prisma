@@ -1,0 +1,263 @@
+// GAIN (Niaga Koin) — Prisma schema
+// Fase 1 (Foundation): model minimal untuk health check.
+// Fase 2 (Authentication): tambah role/lockout ke User, tambah OtpChallenge.
+// Model trading (bots, orders, positions, dst.) ditambahkan bertahap sesuai
+// SDD §6, bukan sekaligus, sesuai aturan incremental di master prompt.
+//
+// Catatan Fase 2: refresh token diterbitkan sebagai JWT stateless (tidak
+// disimpan/di-tracking di database pada fase ini) — penyimpanan sesi yang
+// bisa di-revoke satu-per-satu adalah bagian dari fitur "Pusat Keamanan"
+// (F-SEC-01, Fase 7), bukan dibangun sekarang tanpa endpoint yang
+// memakainya (lihat PROJECT_STATUS.md §5).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  user
+  admin
+}
+
+enum UserStatus {
+  pending_verification
+  active
+  suspended
+}
+
+model User {
+  id                  String     @id @default(uuid())
+  email               String?    @unique
+  phone               String?    @unique
+  passwordHash        String     @map("password_hash")
+  status              UserStatus @default(pending_verification)
+  role                UserRole   @default(user)
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  otpChallenges    OtpChallenge[]
+  exchangeAccounts ExchangeAccount[]
+  balances         Balance[]
+  positions        Position[]
+  orders           Order[]
+  bots             Bot[]
+
+  @@map("users")
+}
+
+enum OtpPurpose {
+  registration
+}
+
+/// OTP disimpan sebagai hash (bukan plaintext) — kode asli hanya ada
+/// sesaat di memori saat dibuat dan dikirim lewat OtpProvider (lihat
+/// backend/src/auth/otp/otp-provider.interface.ts).
+model OtpChallenge {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose     OtpPurpose
+  codeHash    String     @map("code_hash")
+  attempts    Int        @default(0)
+  maxAttempts Int        @default(3) @map("max_attempts")
+  expiresAt   DateTime   @map("expires_at")
+  consumedAt  DateTime?  @map("consumed_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@index([userId, purpose])
+  @@map("otp_challenges")
+}
+
+enum ExchangeConnectionStatus {
+  connected
+  failed
+}
+
+/// Fase 4: koneksi API key milik pengguna ke satu exchange (Binance — satu-
+/// satunya exchange dikonfirmasi, lihat PROJECT_STATUS.md §5). Kredensial
+/// mentah TIDAK PERNAH disimpan di sini — hanya lewat ApiCredential yang
+/// terenkripsi (SDD §6.2, NFR-SEC-005/006).
+model ExchangeAccount {
+  id               String                   @id @default(uuid())
+  userId           String                   @map("user_id")
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exchangeName     String                   @map("exchange_name")
+  connectionStatus ExchangeConnectionStatus @map("connection_status")
+  connectedAt      DateTime?                @map("connected_at")
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
+
+  credential ApiCredential?
+  bots       Bot[]
+
+  @@index([userId])
+  @@map("exchange_accounts")
+}
+
+/// `permissionScope` mencatat hasil pengecekan izin API key SAAT
+/// disimpan (BR-KEY-001: key dengan izin withdrawal tidak pernah
+/// diterima — ditolak sebelum baris ini pernah dibuat).
+model ApiCredential {
+  id                 String          @id @default(uuid())
+  exchangeAccountId  String          @unique @map("exchange_account_id")
+  exchangeAccount    ExchangeAccount @relation(fields: [exchangeAccountId], references: [id], onDelete: Cascade)
+  encryptedApiKey    String          @map("encrypted_api_key")
+  encryptedApiSecret String          @map("encrypted_api_secret")
+  permissionScope    String          @map("permission_scope")
+  rotatedAt          DateTime        @default(now()) @map("rotated_at")
+
+  @@map("api_credentials")
+}
+
+// Fase 4b: Paper Trading Core. Mengikuti pola SDD §6.2 — SATU set tabel
+// Balance/Position/Order/Trade dipakai untuk paper maupun live, dibedakan
+// oleh kolom `is_paper` (bukan tabel terpisah), agar siap dipakai Bot
+// Lifecycle (Fase 5) tanpa migrasi ulang skema.
+//
+// Penyimpangan terdokumentasi dari ERD SDD §6.1: Balance & Position di sini
+// diikat ke `userId` langsung, BUKAN ke `exchangeAccountId`/`botId` seperti
+// SDD — karena SRS §3.8 eksplisit: paper trading TIDAK memerlukan API key
+// exchange untuk mulai ("dapat memakai data pasar publik"). Mewajibkan
+// ExchangeAccount di sini akan melanggar requirement itu. `botId` akan
+// ditambahkan sebagai kolom nullable saat Bot Lifecycle (Fase 5) dibangun.
+//
+// MVP hanya mendukung wallet kas tunggal (USDT) + posisi spot per simbol —
+// tidak ada short selling (SELL divalidasi terhadap quantity posisi yang
+// benar-benar dimiliki, bukan margin).
+
+/// Saldo virtual (kas). `amount` untuk asset selain USDT belum relevan
+/// karena MVP hanya trading pair *-USDT (lihat MARKET_DATA_SUPPORTED_SYMBOLS).
+model Balance {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset     String
+  amount    Decimal  @db.Decimal(24, 8)
+  isPaper   Boolean  @default(true) @map("is_paper")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, asset, isPaper])
+  @@map("balances")
+}
+
+/// Kepemilikan aset kripto hasil BUY (dikurangi saat SELL). Selalu >= 0 —
+/// tidak ada short selling di mode spot paper trading MVP ini.
+model Position {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol        String
+  quantity      Decimal  @db.Decimal(24, 8)
+  avgEntryPrice Decimal  @map("avg_entry_price") @db.Decimal(24, 8)
+  isPaper       Boolean  @default(true) @map("is_paper")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, symbol, isPaper])
+  @@map("positions")
+}
+
+enum OrderSide {
+  buy
+  sell
+}
+
+/// Status lengkap sesuai KONTRAK BACKEND master prompt. Simulator market
+/// order paper trading MVP ini hanya pernah menghasilkan `filled` atau
+/// `rejected` (order market disetujui/ditolak secara sinkron dalam satu
+/// request-response). `pending`/`accepted`/`cancelled`/`failed` disediakan
+/// untuk order tipe lain (limit) dan alur async bot (Fase 5) — bukan belum
+/// dipakai berarti salah, ini forward-compatible by design.
+enum OrderStatus {
+  pending
+  accepted
+  rejected
+  filled
+  cancelled
+  failed
+}
+
+/// Setiap percobaan order dicatat — TERMASUK yang ditolak (saldo tidak
+/// cukup, di bawah minimum notional, data pasar tidak tersedia) — demi
+/// transparansi riwayat (SRS FR-ORD-002) dan audit (mirip semangat
+/// FR-RISK-001: penolakan tetap dicatat, tidak dibuang begitu saja).
+model Order {
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol       String
+  side         OrderSide
+  quantity     Decimal     @db.Decimal(24, 8)
+  status       OrderStatus
+  rejectReason String?     @map("reject_reason")
+  isPaper      Boolean     @default(true) @map("is_paper")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  trade Trade?
+
+  @@index([userId, symbol])
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+/// 1:1 dengan Order pada MVP ini — order market paper trading selalu fully
+/// filled atau tidak filled sama sekali (tidak ada simulasi partial fill /
+/// depth order book, ditandai TBD untuk pengembangan lanjutan).
+model Trade {
+  id               String   @id @default(uuid())
+  orderId          String   @unique @map("order_id")
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  executedPrice    Decimal  @map("executed_price") @db.Decimal(24, 8)
+  executedQuantity Decimal  @map("executed_quantity") @db.Decimal(24, 8)
+  fee              Decimal  @db.Decimal(24, 8)
+  executedAt       DateTime @default(now()) @map("executed_at")
+
+  @@map("trades")
+}
+
+// Fase 5a: Bot Lifecycle. Konfigurasi (strategi/parameter/risk_limits)
+// disediakan lengkap saat pembuatan (bukan alur "Configured" terpisah dari
+// SDD §9) — bot baru langsung berstatus `stopped` (siap, belum berjalan).
+// Strategy Engine & Risk Engine yang benar-benar MEMBACA `parameters`/
+// `riskLimits` untuk menghasilkan & memvalidasi sinyal adalah Fase 5b —
+// Fase 5a hanya menyimpan konfigurasi dan mengelola siklus hidupnya.
+enum BotStatus {
+  stopped
+  active
+  paused
+}
+
+/// Baru mendukung RSI (SRS FR-STRAT-001 menyebut RSI/MACD/Bollinger
+/// sebagai contoh indikator umum) — ditambah MACD dkk. saat benar-benar
+/// diimplementasikan (Fase 5b), bukan didaftarkan lebih dulu tanpa logic.
+enum StrategyType {
+  rsi
+}
+
+model Bot {
+  id                String           @id @default(uuid())
+  userId            String           @map("user_id")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exchangeAccountId String?          @map("exchange_account_id")
+  exchangeAccount   ExchangeAccount? @relation(fields: [exchangeAccountId], references: [id], onDelete: SetNull)
+  name              String
+  symbol            String
+  strategyType      StrategyType     @map("strategy_type")
+  parameters        Json
+  riskLimits        Json             @map("risk_limits")
+  status            BotStatus        @default(stopped)
+  isPaper           Boolean          @default(true) @map("is_paper")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("bots")
+}

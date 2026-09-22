@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>GAIN - Niaga Koin Terminal</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#181c24", "secondary-fixed-dim": "#7bd0ff", "on-background": "#dfe2ee", "secondary": "#7bd0ff", "on-secondary-container": "#00374d", "primary-container": "#3198dc", "surface-dim": "#0f131c", "tertiary-container": "#7c87f3", "surface": "#0f131c", "surface-bright": "#353942", "on-secondary-fixed-variant": "#004c69", "surface-container-high": "#262a33", "on-primary-fixed-variant": "#004b73", "on-primary-container": "#002c47", "on-primary-fixed": "#001d31", "error": "#ffb4ab", "outline-variant": "#3f4850", "on-error-container": "#ffdad6", "on-primary": "#003351", "on-tertiary": "#131e8c", "primary-fixed-dim": "#93ccff", "on-tertiary-fixed-variant": "#2f3aa3", "inverse-on-surface": "#2c3039", "on-surface-variant": "#bfc7d2", "tertiary-fixed": "#e0e0ff", "surface-container-highest": "#31353e", "outline": "#89929b", "secondary-container": "#00a6e0", "tertiary": "#bdc2ff", "on-error": "#690005", "on-secondary": "#00354a", "on-surface": "#dfe2ee", "inverse-surface": "#dfe2ee", "error-container": "#93000a", "secondary-fixed": "#c4e7ff", "on-tertiary-fixed": "#000767", "background": "#0f131c", "tertiary-fixed-dim": "#bdc2ff", "surface-container-lowest": "#0a0e16", "primary": "#93ccff", "surface-tint": "#93ccff", "inverse-primary": "#006398", "on-tertiary-container": "#081486", "on-secondary-fixed": "#001e2c", "surface-container": "#1c2028", "surface-variant": "#31353e", "primary-fixed": "#cce5ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-mobile": "0.75rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-dense": "0.5rem", "margin": "1.5rem" }, fontFamily: { "body-lg": ["Inter"], "ticker-lg": ["JetBrains Mono"], "headline-md": ["Inter"], "label-caps": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "ticker-xl": ["JetBrains Mono"], "headline-lg": ["Inter"], "ticker-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "ticker-md": ["JetBrains Mono"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "ticker-lg": ["20px", { lineHeight: "28px", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }], "label-caps": ["11px", { lineHeight: "14px", fontWeight: "600" }], "headline-lg-mobile": ["22px", { lineHeight: "30px", fontWeight: "600" }], "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "ticker-xl": ["32px", { lineHeight: "40px", fontWeight: "700" }], "headline-lg": ["30px", { lineHeight: "38px", fontWeight: "600" }], "ticker-sm": ["11px", { lineHeight: "14px", fontWeight: "500" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "ticker-md": ["14px", { lineHeight: "20px", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#0f131c;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 5rem);}.pt-safe{padding-top:env(safe-area-inset-top, 0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col selection:bg-primary selection:text-on-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-xs"><div class="flex items-center gap-space-xs min-w-0 flex-shrink-0"><img alt="GAIN Monogram Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1eclB7tX9CuaySQk92XyTdqK6y8r6eBDaYKc2BVkmdsmTPtaNFJBmzjRkaLctl5Hx9I1WxKXfAIxWk8nD_rrfP4PQNgDqQF0T0rgvyWaYF-o4o2c70MzKq-jEf3IllZemg7SeVWyc-WyBPtl6GkI6zDCm9EmGtB-SRlYhPO3KmlaQxI2XkS_iPqLboUgdsevBEiN0T3IkbocrFM7Bl40hGndlBu5StDAgt1YnI7EKkgKDXYvvTqx"/><div class="flex flex-col justify-center select-none"><span class="font-headline-md text-headline-md tracking-tight text-on-surface leading-none font-bold">GAIN</span><span class="font-ticker-sm text-ticker-sm text-primary tracking-widest leading-tight uppercase font-medium">NIAGA KOIN</span></div></div><div class="flex items-center gap-space-xs flex-1 justify-center px-space-xs overflow-hidden"><div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-high/80 backdrop-blur-md"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-ticker-sm text-ticker-sm text-tertiary font-semibold tracking-wide whitespace-nowrap">PAPER</span><span class="hidden sm:inline font-ticker-sm text-ticker-sm text-on-surface-variant font-normal">12ms</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Notifikasi Sistem" class="w-11 h-11 relative rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface active:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-32">
+<!-- Sub-Header & Navigation Context -->
+<div class="flex flex-col px-margin-mobile pt-3 pb-2 gap-space-xs">
+<div class="flex items-center justify-between">
+<button class="inline-flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface active:bg-surface-container-highest transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span class="font-body-sm text-body-sm font-medium">Batal</span>
+</button>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary-container/20 border-0">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-ticker-sm text-ticker-sm text-tertiary font-semibold tracking-wide uppercase">Paper Sandbox</span>
+</div>
+<button class="inline-flex items-center gap-1 py-1.5 px-2.5 rounded-lg bg-surface-container-low text-primary hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">bookmark</span>
+<span class="font-body-sm text-body-sm font-medium">Draft</span>
+</button>
+</div>
+<div class="mt-1 flex flex-col">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight font-bold">Konfigurasi Bot Baru</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Langkah 3 dari 4: Parameter &amp; Risk Engine Guard</p>
+</div>
+</div>
+<!-- Stepper 4-Steps Flow Tracker -->
+<div class="px-margin-mobile my-2">
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-2">
+<!-- Step Chips Strip -->
+<div class="grid grid-cols-4 gap-1.5">
+<!-- Step 1 Complete -->
+<div class="flex flex-col items-center gap-1 group">
+<div class="w-full h-1.5 rounded-full bg-primary-container"></div>
+<div class="flex items-center gap-1 w-full justify-center">
+<span class="material-symbols-outlined text-[13px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-label-caps text-primary truncate hidden sm:inline">Pair</span>
+</div>
+</div>
+<!-- Step 2 Complete -->
+<div class="flex flex-col items-center gap-1">
+<div class="w-full h-1.5 rounded-full bg-primary-container"></div>
+<div class="flex items-center gap-1 w-full justify-center">
+<span class="material-symbols-outlined text-[13px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-label-caps text-primary truncate hidden sm:inline">Strategi</span>
+</div>
+</div>
+<!-- Step 3 Active -->
+<div class="flex flex-col items-center gap-1">
+<div class="w-full h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(123,208,255,0.6)]"></div>
+<div class="flex items-center gap-1 w-full justify-center">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-secondary font-bold truncate">Risiko</span>
+</div>
+</div>
+<!-- Step 4 Upcoming -->
+<div class="flex flex-col items-center gap-1 opacity-40">
+<div class="w-full h-1.5 rounded-full bg-surface-bright"></div>
+<div class="flex items-center gap-1 w-full justify-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant truncate">Tinjau</span>
+</div>
+</div>
+</div>
+<!-- Compact Summary of Steps 1 & 2 -->
+<div class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-surface-container text-on-surface-variant">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[15px] text-primary">currency_bitcoin</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface font-semibold truncate">Binance · BTC/USDT</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-sm text-body-sm text-tertiary">RSI Mean Reversion</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-margin-mobile gap-3">
+<!-- Risk Engine Advisory Banner -->
+<div class="p-space-md rounded-xl bg-surface-container-high/70 backdrop-blur flex items-start gap-space-sm shadow-md">
+<div class="w-8 h-8 rounded-lg bg-primary-container/20 flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-sm text-body-sm text-primary font-semibold uppercase tracking-wider">Risk Engine Guardrail</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-bright font-ticker-sm text-ticker-sm text-on-surface-variant">FR-RISK-001</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 leading-snug">
+          Setiap sinyal order divalidasi deterministik sebelum dieksekusi. Order berisiko tinggi yang melanggar kuota drawdown portofolio akan ditolak otomatis secara lokal.
+        </p>
+</div>
+</div>
+<!-- Card 1: Modal Allocation per Bot -->
+<div class="p-space-md rounded-2xl bg-surface-container flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">account_balance</span>
+<span class="font-headline-md text-headline-md text-on-surface text-[17px]">Alokasi Modal Bot</span>
+</div>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">Tersedia: 10,000 USDT</span>
+</div>
+<!-- Currency Input Display -->
+<div class="p-space-sm rounded-xl bg-surface-container-lowest flex items-center justify-between focus-within:ring-1 focus-within:ring-secondary">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary font-ticker-sm text-ticker-sm font-bold">$</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">USDT</span>
+</div>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent text-right font-ticker-xl text-ticker-xl text-on-surface w-36 outline-none font-bold tracking-tight" id="capital-input" type="text" value="500.00"/>
+</div>
+</div>
+<!-- Quick Percentage Step Chips -->
+<div class="grid grid-cols-4 gap-2">
+<button class="pct-btn py-2 px-1 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface font-ticker-sm text-ticker-sm transition-all text-center" type="button">10%</button>
+<button class="pct-btn py-2 px-1 rounded-lg bg-secondary text-on-secondary font-ticker-sm text-ticker-sm font-bold shadow-md transition-all text-center" type="button">25% (Aktif)</button>
+<button class="pct-btn py-2 px-1 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface font-ticker-sm text-ticker-sm transition-all text-center" type="button">50%</button>
+<button class="pct-btn py-2 px-1 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface font-ticker-sm text-ticker-sm transition-all text-center" type="button">Maks (20%)</button>
+</div>
+<!-- Micro Validation Label -->
+<div class="flex items-center gap-1.5 pt-1 text-primary">
+<span class="material-symbols-outlined text-[15px]">verified_user</span>
+<span class="font-body-sm text-body-sm text-primary leading-tight">5% dari total portofolio simulasi — <span class="font-semibold text-secondary">Aman</span> (Plafon aman: 20%).</span>
+</div>
+</div>
+<!-- Card 2: Strategy Tuning (RSI Mean Reversion) -->
+<div class="p-space-md rounded-2xl bg-surface-container flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">tune</span>
+<span class="font-headline-md text-headline-md text-on-surface text-[17px]">Parameter Strategi</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary font-ticker-sm text-ticker-sm font-medium">RSI Scalp</span>
+</div>
+<!-- Timeframe Selector -->
+<div class="flex flex-col gap-1.5">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Timeframe Candlestick</span>
+<div class="grid grid-cols-5 gap-1.5 p-1 rounded-xl bg-surface-container-lowest">
+<button class="py-1.5 rounded-lg text-center font-ticker-sm text-ticker-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">1m</button>
+<button class="py-1.5 rounded-lg text-center font-ticker-sm text-ticker-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">5m</button>
+<button class="py-1.5 rounded-lg text-center font-ticker-sm text-ticker-sm bg-surface-container-high text-secondary font-bold shadow-sm" type="button">15m</button>
+<button class="py-1.5 rounded-lg text-center font-ticker-sm text-ticker-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">1h</button>
+<button class="py-1.5 rounded-lg text-center font-ticker-sm text-ticker-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">4h</button>
+</div>
+</div>
+<!-- Indicators Grid -->
+<div class="grid grid-cols-3 gap-2 pt-1">
+<div class="p-2 rounded-xl bg-surface-container-lowest flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant truncate">RSI Period</span>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold">14</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">timeline</span>
+</div>
+</div>
+<div class="p-2 rounded-xl bg-surface-container-lowest flex flex-col">
+<span class="font-label-caps text-label-caps text-primary truncate">Oversold (Buy)</span>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-md text-ticker-md text-primary font-semibold">≤ 30</span>
+<span class="material-symbols-outlined text-[14px] text-primary">south_west</span>
+</div>
+</div>
+<div class="p-2 rounded-xl bg-surface-container-lowest flex flex-col">
+<span class="font-label-caps text-label-caps text-error truncate">Overbought (Sell)</span>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-md text-ticker-md text-error font-semibold">≥ 70</span>
+<span class="material-symbols-outlined text-[14px] text-error">north_east</span>
+</div>
+</div>
+</div>
+<!-- Order Execution Route -->
+<div class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">sync_alt</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Tipe Eksekusi Order</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">Simulated Market with 0.05% Slippage</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+<!-- Card 3: Risk Engine Guard & Circuit Breaker -->
+<div class="p-space-md rounded-2xl bg-surface-container flex flex-col gap-3 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">security</span>
+<span class="font-headline-md text-headline-md text-on-surface text-[17px]">Pengaman Risiko Keras</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-error-container/40 text-error font-label-caps text-label-caps font-bold">WAJIB AKTIF</span>
+</div>
+<!-- SL / TP Sliders Cluster -->
+<div class="flex flex-col gap-2.5">
+<!-- Stop Loss -->
+<div class="p-space-sm rounded-xl bg-surface-container-lowest flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Auto Stop-Loss (Hard Cap)</span>
+</div>
+<span class="font-ticker-md text-ticker-md text-error font-bold">2.5%</span>
+</div>
+<!-- Slider Track Representation -->
+<div class="w-full bg-surface-bright h-2 rounded-full overflow-hidden flex">
+<div class="bg-error h-full rounded-full" style="width: 25%;"></div>
+</div>
+<div class="flex justify-between font-ticker-sm text-ticker-sm text-on-surface-variant">
+<span>Min: 0.5%</span>
+<span class="text-error font-medium">Max Loss: -12.50 USDT</span>
+<span>Max Plafon: 5.0%</span>
+</div>
+</div>
+<!-- Take Profit -->
+<div class="p-space-sm rounded-xl bg-surface-container-lowest flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Target Take-Profit</span>
+</div>
+<span class="font-ticker-md text-ticker-md text-secondary font-bold">5.0%</span>
+</div>
+<div class="w-full bg-surface-bright h-2 rounded-full overflow-hidden flex">
+<div class="bg-secondary h-full rounded-full" style="width: 50%;"></div>
+</div>
+<div class="flex justify-between font-ticker-sm text-ticker-sm text-on-surface-variant">
+<span>R:R 1:2.0</span>
+<span class="text-secondary font-medium">Target Profit: +25.00 USDT</span>
+<span>10.0% Max</span>
+</div>
+</div>
+<!-- Daily Max Drawdown -->
+<div class="grid grid-cols-2 gap-2">
+<div class="p-space-sm rounded-xl bg-surface-container-lowest flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Batas Drawdown Harian</span>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold">4.0%</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant">-20.00 $</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-lowest flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Slippage Cap Simulasi</span>
+<div class="flex items-center justify-between mt-1">
+<span class="font-ticker-md text-ticker-md text-on-surface font-semibold">0.15%</span>
+<span class="material-symbols-outlined text-[15px] text-primary">speed</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Circuit Breaker Toggle -->
+<div class="p-space-sm rounded-xl bg-surface-container-high flex items-center justify-between">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-secondary-container/20 flex items-center justify-center flex-shrink-0 text-secondary mt-0.5">
+<span class="material-symbols-outlined text-[18px]">electric_meter</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Circuit Breaker Otomatis</span>
+<span class="font-ticker-sm text-ticker-sm text-on-surface-variant leading-tight">Jeda 60 menit bila 3 order rugi berurutan</span>
+</div>
+</div>
+<!-- Native-styled Toggle ON -->
+<button class="w-12 h-6 rounded-full bg-secondary-container p-0.5 flex items-center justify-end transition-colors cursor-pointer" id="circuit-breaker-toggle" type="button">
+<div class="w-5 h-5 rounded-full bg-on-secondary shadow-md"></div>
+</button>
+</div>
+</div>
+<!-- Card 4: Real-Time Risk Audit Scorecard -->
+<div class="p-space-md rounded-2xl bg-surface-container-low flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-2 border-b-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">fact_check</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Hasil Validasi Pra-Jalan</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-highest">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-ticker-sm text-ticker-sm text-secondary font-bold">Skor 92/100 · AMAN</span>
+</div>
+</div>
+<!-- Checklist Items -->
+<div class="flex flex-col gap-2 pt-1 font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+<span class="text-on-surface flex-1">Ukuran Posisi: <span class="font-ticker-sm text-ticker-sm text-on-surface-variant">5.0% (Di bawah batas maks portofolio 20%)</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+<span class="text-on-surface flex-1">Rasio Risk-to-Reward: <span class="font-ticker-sm text-ticker-sm text-on-surface-variant">1 : 2.0 (Target sehat &gt; 1:1.5)</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+<span class="text-on-surface flex-1">Stop-Loss Terdefinisi: <span class="font-ticker-sm text-ticker-sm text-on-surface-variant">Virtual Liquidation Shield Aktif</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+<span class="text-on-surface flex-1">Scope API Sandbox: <span class="font-ticker-sm text-ticker-sm text-on-surface-variant">Trade-Only, Bebas Akses Tarik Aset</span></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Persistent Floating Bottom Action Bar (Mobile UX) -->
+<div class="fixed bottom-16 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl px-margin-mobile py-2.5 flex flex-col gap-2 shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
+<!-- Live Projection Mini-Row -->
+<div class="flex items-center justify-between px-2 font-ticker-sm text-ticker-sm text-on-surface-variant">
+<span>Potensi Resiko: <strong class="text-error font-semibold">-12.50 USDT</strong></span>
+<span>Target Untung: <strong class="text-secondary font-semibold">+25.00 USDT</strong></span>
+</div>
+<!-- Dual Actions -->
+<div class="grid grid-cols-3 gap-2">
+<button class="col-span-1 h-12 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-bright active:scale-[0.98] transition-all flex items-center justify-center font-body-md text-body-md font-medium" type="button">
+        Kembali
+      </button>
+<button class="col-span-2 h-12 rounded-xl bg-primary text-on-primary hover:bg-primary-fixed-dim active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-headline-md text-headline-md text-[16px] font-bold shadow-lg shadow-primary/20" id="btn-next-step" type="button">
+<span>Lanjut ke Ringkasan</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for interactive demo feel
+  const toggleBtn = document.getElementById('circuit-breaker-toggle');
+  if (toggleBtn) {
+    let isActive = true;
+    toggleBtn.addEventListener('click', () => {
+      isActive = !isActive;
+      if (isActive) {
+        toggleBtn.className = "w-12 h-6 rounded-full bg-secondary-container p-0.5 flex items-center justify-end transition-colors cursor-pointer";
+        toggleBtn.innerHTML = '<div class="w-5 h-5 rounded-full bg-on-secondary shadow-md"></div>';
+      } else {
+        toggleBtn.className = "w-12 h-6 rounded-full bg-surface-bright p-0.5 flex items-center justify-start transition-colors cursor-pointer";
+        toggleBtn.innerHTML = '<div class="w-5 h-5 rounded-full bg-on-surface-variant shadow-md"></div>';
+      }
+    });
+  }
+
+  // Capital percentage buttons feedback
+  const pctButtons = document.querySelectorAll('.pct-btn');
+  const capitalInput = document.getElementById('capital-input');
+  pctButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      pctButtons.forEach(b => {
+        b.className = "pct-btn py-2 px-1 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface font-ticker-sm text-ticker-sm transition-all text-center";
+      });
+      btn.className = "pct-btn py-2 px-1 rounded-lg bg-secondary text-on-secondary font-ticker-sm text-ticker-sm font-bold shadow-md transition-all text-center";
+      
+      const label = btn.innerText.trim();
+      if (label.includes('10%') && capitalInput) capitalInput.value = '200.00';
+      if (label.includes('25%') && capitalInput) capitalInput.value = '500.00';
+      if (label.includes('50%') && capitalInput) capitalInput.value = '1,000.00';
+      if (label.includes('Maks') && capitalInput) capitalInput.value = '2,000.00';
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.3)]" data-active-classes="text-secondary"><div class="h-16 px-space-xs flex items-center justify-around"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">space_dashboard</span><span class="font-label-caps text-label-caps">Beranda</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pasar" href="#"><span class="material-symbols-outlined text-[22px]">candlestick_chart</span><span class="font-label-caps text-label-caps">Pasar</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="bot-trading" href="#"><span class="material-symbols-outlined text-[22px]">smart_toy</span><span class="font-label-caps text-label-caps">Bot</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="portofolio" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-caps text-label-caps">Portofolio</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] h-full gap-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="pengaturan" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-caps text-label-caps">Akun</span></a></div></nav></body></html>
