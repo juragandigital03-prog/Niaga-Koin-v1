@@ -9,8 +9,8 @@
 | 0 | Discovery & Audit | **DONE** |
 | 1 | Foundation | **DONE** |
 | 2 | Authentication | **DONE** |
-| 3 | Market Data | NOT STARTED |
-| 4 | Paper Trading Core | NOT STARTED |
+| 3 | Market Data | **DONE** |
+| 4 | Exchange Account Connection + Paper Trading Core | NOT STARTED |
 | 5 | Bot & Strategy | NOT STARTED |
 | 6 | Portfolio & Dashboard | NOT STARTED |
 | 7 | History, Notification, Admin | NOT STARTED |
@@ -51,12 +51,19 @@ Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 - Bug nyata ditemukan & diperbaiki lewat e2e test: `ConfigService.get()` mengembalikan string env mentah, sempat dikirim sebagai `maxAttempts` (Int) ke Prisma tanpa `Number(...)` — lihat `CHANGELOG.md` Fase 2.
 - Test: 26 unit test (AuthService, RolesGuard, JwtStrategy, env validation) + 5 e2e test (alur penuh register→verify→login→me, wrong password, wrong OTP, token-purpose reuse ditolak) — seluruhnya melawan PostgreSQL nyata. Plus smoke test manual via curl.
 
-## Fase 3 — Market Data (rencana)
-- Adapter Binance public REST/WS untuk harga & candle. Retry/backoff terbatas, timeout, fallback fixture untuk test.
-- Endpoint baca data pasar untuk dashboard.
+## Fase 3 — Market Data — **DONE** (2026-09-22)
+- `MarketDataProvider` interface (SDD §5.2 adapter pattern, subset read-only — tidak termasuk placeOrder/getBalance yang butuh API key pengguna, itu Fase 4) + `BinanceMarketDataProvider` (Binance public REST, tanpa API key).
+- Retry terbatas (default 2x, backoff 200/400/800ms) + timeout (default 5s) via `fetchJsonWithRetry`; kegagalan → `MarketDataUnavailableError` → `503` (fail-safe, bukan data palsu/hang selamanya).
+- Cache in-memory per simbol (TTL default 5 detik) — mengurangi beban ke Binance & risiko rate limit, tanpa perlu Redis untuk skala MVP.
+- Whitelist simbol (`MARKET_DATA_SUPPORTED_SYMBOLS`, default BTC/ETH/SOL mengikuti mockup) — symbol di luar whitelist ditolak `400` sebelum memanggil exchange sama sekali.
+- Endpoint baru: `GET /market-data/symbols`, `GET /market-data/ticker/{symbol}`, `GET /market-data/candles/{symbol}` — publik (tanpa auth, bukan data pengguna).
+- **Worker terpisah belum dibuat** — endpoint REST cukup untuk kebutuhan Fase 3 (dashboard belum terhubung nyata, itu Fase 6); WebSocket/streaming real-time dan proses worker mandiri dipertimbangkan lagi saat Strategy Engine (Fase 5) benar-benar perlu mengonsumsi event market data terus-menerus.
+- **Konektivitas Binance sungguhan TIDAK dapat diverifikasi di sesi ini** — sandbox pengembangan memblokir egress ke `api.binance.com` (kebijakan organisasi, dikonfirmasi via `curl` yang mengembalikan `403 connect_rejected`). Logic terverifikasi penuh lewat unit test (mock fetch) + e2e test (fake provider ter-inject) + smoke test manual yang membuktikan jalur fail-safe 503 bekerja. **Pengguna wajib mengecek konektivitas nyata di mesin sendiri** sebelum menganggap fitur ini selesai diverifikasi end-to-end (`curl https://api.binance.com/api/v3/ping`).
+- Test: 14 unit test (retry helper, Binance provider parsing, service caching/validation) + 5 e2e test baru (melawan fake provider) — total 40 unit + 11 e2e lulus di seluruh backend.
 
-## Fase 4 — Paper Trading Core (rencana)
-- Saldo virtual, tabel `orders`/`trades`/`positions`/`balances` dengan kolom `is_paper`, simulator eksekusi (fee & slippage eksplisit, ditandai TBD jika belum diputuskan), validasi saldo/quantity/precision.
+## Fase 4 — Exchange Account Connection + Paper Trading Core (rencana)
+- **Exchange Account Connection (FR-EXC-001/002):** simpan koneksi API key pengguna (`EXCHANGE_ACCOUNTS`, `API_CREDENTIALS` — dienkripsi, `permission_scope` divalidasi trade-only, tolak key dengan izin withdrawal). Prasyarat untuk `BOTS.exchange_account_id` di Fase 5 (SDD §6.1) — dipindah ke sini (bukan Fase 3) karena market data publik tidak butuh API key sama sekali (SRS §3.8).
+- **Paper Trading Core:** saldo virtual, tabel `orders`/`trades`/`positions`/`balances` dengan kolom `is_paper`, simulator eksekusi (fee & slippage eksplisit, ditandai TBD jika belum diputuskan), validasi saldo/quantity/precision.
 - Isolasi teknis paper vs live ditegakkan di level DB + service + API sejak awal.
 
 ## Fase 5 — Bot & Strategy (rencana)

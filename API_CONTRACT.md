@@ -1,6 +1,6 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status:** Fase 2 (Authentication) selesai — endpoint auth inti berfungsi nyata. Sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
+> **Status:** Fase 2 (Authentication) dan Fase 3 (Market Data) selesai — endpoint auth dan market data inti berfungsi nyata. Sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
@@ -20,12 +20,21 @@ Endpoint OTP saat ini **belum terhubung provider pengiriman nyata** — kode dik
 | GET | `/users/me` | 2 | **DONE** — butuh `Authorization: Bearer <accessToken>`. Tidak pernah mengembalikan `passwordHash`. |
 | PATCH | `/users/me` | — | TODO — belum ada kebutuhan konkret field apa yang bisa diubah, ditunda sampai ada UI profil (F-USER-01, belum ada mockup). |
 
-## Exchange
+## Market Data (baru — tidak ada di SDD §7, ditambahkan Fase 3 karena PRD F-MKT-01/SRS FR-MKT-001 butuh cara bagi frontend membaca harga)
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| POST | `/exchange-accounts` | 3 | TODO |
-| GET | `/exchange-accounts` | 3 | TODO |
-| DELETE | `/exchange-accounts/{id}` | 3 | TODO |
+| GET | `/market-data/symbols` | 3 | **DONE** — `200 {symbols: string[]}`. Whitelist dari `MARKET_DATA_SUPPORTED_SYMBOLS` (default `BTCUSDT,ETHUSDT,SOLUSDT`, mengikuti pasangan aset di mockup desain — cakupan final masih `TBD` di SRS §6.1). |
+| GET | `/market-data/ticker/{symbol}` | 3 | **DONE** — `200 {symbol, price, asOf}`. Publik, tidak butuh auth (data pasar bukan data pengguna). Symbol di luar whitelist → `400`. Kegagalan/timeout ke exchange → `503` (fail-safe, tidak pernah mengarang data). |
+| GET | `/market-data/candles/{symbol}?interval=&limit=` | 3 | **DONE** — `200 Candle[]`. `interval` ∈ `1m,5m,15m,1h,4h,1d`; `limit` 1-500 (default 100). Validasi sama seperti ticker. |
+
+Sumber data: Binance public REST (`BinanceMarketDataProvider`, `GET /api/v3/ticker/price`, `GET /api/v3/klines`) — tidak butuh API key (baca publik saja). Retry terbatas (default 2x) + timeout (default 5s) + cache in-memory per simbol (default TTL 5 detik, bukan Redis — belum diperlukan untuk skala MVP). **Belum diverifikasi terhadap Binance sungguhan di sesi ini** — sandbox pengembangan ini memblokir akses keluar ke `api.binance.com` (kebijakan organisasi); logic pemanggilan API sudah diuji lewat mock/fixture (unit + e2e), tapi konektivitas nyata **wajib dicek di mesin pengguna** (`curl https://api.binance.com/api/v3/ping`) sebelum fitur ini dianggap benar-benar tervalidasi end-to-end — lihat `CHANGELOG.md` Fase 3.
+
+## Exchange (koneksi API key milik pengguna — beda dari Market Data publik di atas)
+| Method | Path | Fase | Status |
+|---|---|---|---|
+| POST | `/exchange-accounts` | 4 | TODO |
+| GET | `/exchange-accounts` | 4 | TODO |
+| DELETE | `/exchange-accounts/{id}` | 4 | TODO |
 
 ## Bots
 | Method | Path | Fase | Status |

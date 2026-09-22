@@ -97,6 +97,16 @@ curl http://localhost:3000/api/v1/users/me -H "Authorization: Bearer <accessToke
 
 Detail lengkap tiap endpoint (rate limit, aturan lockout, dll.) ada di `API_CONTRACT.md`.
 
+## Mencoba Market Data (Fase 3)
+
+```bash
+curl http://localhost:3000/api/v1/market-data/symbols
+curl http://localhost:3000/api/v1/market-data/ticker/BTCUSDT
+curl "http://localhost:3000/api/v1/market-data/candles/BTCUSDT?interval=1h&limit=10"
+```
+
+**Penting:** endpoint ini benar-benar memanggil Binance (`api.binance.com`) dari mesin Anda. Kalau mendapat `503`, itu berarti backend tidak bisa menjangkau Binance (bukan bug kode) — cek dulu dengan `curl https://api.binance.com/api/v3/ping` di luar aplikasi untuk memastikan koneksi internet/firewall Anda mengizinkannya.
+
 ## Menjalankan Frontend
 
 ```bash
@@ -149,6 +159,8 @@ docker compose down -v
 | `GET /api/v1/health` mengembalikan `503` | Database tidak menyala atau `DATABASE_URL` salah | Pastikan `docker compose up -d` berjalan dan port 5432 dapat diakses |
 | Port 5432/3000/5173 sudah dipakai | Proses lain sedang berjalan | Hentikan proses lama atau ubah port di `.env`/`vite.config.ts` |
 | `npx prisma migrate dev` gagal konek | Database belum siap saat migration dijalankan | Tunggu healthcheck `docker compose ps` menunjukkan status `healthy`, lalu ulangi |
+| `GET /market-data/ticker/{symbol}` mengembalikan `503` | Backend tidak bisa menjangkau Binance (firewall/proxy/internet mati) | Cek `curl https://api.binance.com/api/v3/ping` di luar aplikasi; ini bukan bug kode — ini fail-safe yang disengaja saat exchange tak terjangkau |
+| `GET /market-data/ticker/{symbol}` mengembalikan `400` | Symbol di luar whitelist `MARKET_DATA_SUPPORTED_SYMBOLS` | Cek `GET /market-data/symbols` untuk daftar yang didukung, atau tambahkan symbol ke env tersebut |
 
 ## Struktur Proyek
 

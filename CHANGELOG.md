@@ -2,6 +2,25 @@
 
 Format: setiap entri merepresentasikan satu fase kerja (bukan setiap commit kecil).
 
+## [Fase 3] Market Data — 2026-09-22
+### Ditambahkan
+- `MarketDataProvider` interface (`backend/src/market-data/market-data-provider.interface.ts`) — subset read-only dari pola Exchange Adapter SDD §5.2, sengaja tidak termasuk `placeOrder`/`getBalance` (butuh API key pengguna, Fase 4).
+- `BinanceMarketDataProvider` — Binance public REST (`/api/v3/ticker/price`, `/api/v3/klines`), tanpa API key.
+- `fetchJsonWithRetry` — retry terbatas (default 2x, backoff 200/400/800ms) + timeout (default 5s) via `AbortController`. Gagal setelah retry habis → `MarketDataUnavailableError`, bukan hang atau data palsu.
+- `MarketDataService` — validasi whitelist simbol (`MARKET_DATA_SUPPORTED_SYMBOLS`, default `BTCUSDT,ETHUSDT,SOLUSDT`) sebelum memanggil exchange sama sekali; validasi interval/limit candle; cache in-memory per simbol (TTL default 5 detik, bukan Redis — belum diperlukan skala MVP); memetakan kegagalan provider ke `503` (fail-safe).
+- Endpoint baru: `GET /api/v1/market-data/symbols`, `GET /api/v1/market-data/ticker/{symbol}`, `GET /api/v1/market-data/candles/{symbol}?interval=&limit=` — publik, tanpa auth (bukan data milik pengguna).
+- Env baru: `MARKET_DATA_SUPPORTED_SYMBOLS`, `MARKET_DATA_CACHE_TTL_MS`, `MARKET_DATA_REQUEST_TIMEOUT_MS`, `MARKET_DATA_MAX_RETRIES`.
+
+### Keterbatasan Diketahui (didokumentasikan, bukan disembunyikan)
+- **Konektivitas Binance sungguhan TIDAK diverifikasi di sesi ini.** Sandbox pengembangan ini memblokir egress ke `api.binance.com` oleh kebijakan organisasi — dikonfirmasi eksplisit: `curl https://api.binance.com/api/v3/ping` mengembalikan `curl: (56) CONNECT tunnel failed, response 403` dengan pesan proxy "connect_rejected (organization policy)". Ini **bukan bug di kode GAIN** — ini pembatasan jaringan sandbox itu sendiri, tidak akan terjadi di MacBook pengguna dengan akses internet normal.
+- Untuk tetap membuktikan logic benar tanpa akses jaringan nyata: unit test memakai `fetch` yang di-mock, e2e test memakai `MarketDataProvider` palsu yang di-inject (`overrideProvider`), dan smoke test manual membuktikan bahwa jalur kegagalan koneksi sungguhan (Binance tidak terjangkau) menghasilkan `503` yang benar — bukan crash atau hang.
+- **Belum ada endpoint yang divalidasi lulus melawan Binance API sungguhan.** Pengguna wajib menjalankan `curl http://localhost:3000/api/v1/market-data/ticker/BTCUSDT` di mesin sendiri setelah `npm run start:dev` sebagai langkah verifikasi wajib sebelum fitur ini dianggap selesai divalidasi end-to-end — dicatat eksplisit di `FEATURE_MATRIX.md`, bukan diam-diam ditandai DONE tanpa syarat.
+- WebSocket/streaming real-time (disebut di PRD/SDD) dan proses worker market data terpisah **belum dibangun** — REST + cache cukup untuk kebutuhan Fase 3 (belum ada consumer yang butuh streaming terus-menerus; Strategy Engine di Fase 5 adalah kandidat consumer pertama).
+
+### Pengujian (hasil pada sesi ini)
+- `npx tsc --noEmit` PASS, `npx eslint` PASS (0 error, warning `no-explicit-any` di file test saja), `npx jest` PASS (40/40 unit test, +14 baru untuk market data), `npx jest --config test/jest-e2e.json` PASS (11/11 e2e test, +5 baru — simbol tidak didukung → 400, interval tidak valid → 400, outage provider → 503, melawan fake provider ter-inject), `npx nest build` PASS.
+- Smoke test manual: server nyata di-boot, `GET /market-data/symbols` mengembalikan whitelist; `GET /market-data/ticker/BTCUSDT` mengembalikan `503` (karena Binance tak terjangkau dari sandbox ini — perilaku fail-safe yang benar, bukan bug); `GET /market-data/ticker/DOGEUSDT` (di luar whitelist) → `400`; interval tidak valid → `400`.
+
 ## [Fase 2] Authentication — 2026-09-22
 ### Ditambahkan
 - `POST /api/v1/auth/register` — email + password, membuat user `pending_verification`, menerbitkan OTP 6-digit (di-hash sebelum disimpan) dan token registrasi sementara. Registrasi ulang untuk email yang sama & masih `pending_verification` berfungsi sebagai resend OTP.
