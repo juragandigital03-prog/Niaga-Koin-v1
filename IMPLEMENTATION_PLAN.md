@@ -12,7 +12,8 @@
 | 3 | Market Data | **DONE** |
 | 4a | Exchange Account Connection | **DONE** |
 | 4b | Paper Trading Core | **DONE** |
-| 5 | Bot & Strategy | NOT STARTED |
+| 5a | Bot Lifecycle | **DONE** |
+| 5b | Strategy Engine + Risk Engine | NOT STARTED |
 | 6 | Portfolio & Dashboard | NOT STARTED |
 | 7 | History, Notification, Admin | NOT STARTED |
 | 8 | Hardening & QA | NOT STARTED |
@@ -86,8 +87,21 @@ Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 - Isolasi teknis paper vs live ditegakkan di level DB (`is_paper`) + service + API sejak awal — konsisten dengan prinsip #10 SDD.
 - Test: 15 unit test baru (`WalletService` 4, `OrderService` 11 — termasuk assersi numerik tangan atas slippage/fee/weighted-avg-entry-price) + 8 e2e test baru (alur penuh buy→sell, race-safety saldo tak pernah negatif, isolasi antar-user, reset, unauth) — total 75 unit + 25 e2e lulus di seluruh backend. Plus smoke test manual melawan server & Postgres nyata yang membuktikan fail-safe bekerja saat market data benar-benar tak terjangkau.
 
-## Fase 5 — Bot & Strategy (rencana)
-- Lifecycle bot (create/configure/start/pause/stop/delete), strategi indikator dasar (RSI/MACD — disebut eksplisit di SRS FR-STRAT-001), Risk Engine sebagai gate wajib sebelum eksekusi/simulasi (FR-RISK-001).
+## Fase 5a — Bot Lifecycle — **DONE** (2026-09-22)
+- Dipecah dari "Fase 5 — Bot & Strategy" gabungan menjadi dua vertical slice (lifecycle dulu, lalu strategi+risk), pola yang sama seperti pemecahan Fase 4 — patch tetap kecil dan reviewable.
+- Model Prisma `Bot` (migration `bot_lifecycle`) — konfigurasi (nama, symbol, `strategyType`, `parameters` JSON, `riskLimits` JSON, `exchangeAccountId` opsional) disediakan lengkap saat pembuatan, bot baru langsung `stopped` (tidak ada state "Configured" transisional terpisah dari SDD §9 — konfigurasi & pembuatan terjadi bersamaan dalam satu request).
+- Endpoint baru (`JwtAuthGuard`): `POST/GET /bots`, `GET /bots/{id}`, `PATCH .../start|pause|stop` (idempotent — memanggil `start` pada bot yang sudah aktif mengembalikan state saat ini, bukan error), `DELETE /bots/{id}` (`409` jika belum `stopped`).
+- `PATCH .../pause` ditambahkan sebagai endpoint baru (tidak ada di SDD §7 asli) — SDD §9 lifecycle punya state `Paused` terpisah dari `Stopped`, dan master prompt eksplisit menyebut "pause" sebagai aksi lifecycle sendiri.
+- Batas jumlah bot per pengguna (`MAX_BOTS_PER_USER`, default 10) — pengganti sementara untuk limit per-tier langganan (F-SUB-01 masih gap requirement, tidak diimplementasikan sebagai TODO tanpa fallback).
+- **Menuntaskan TODO dari Fase 4a:** `ExchangeService.disconnect()` sekarang benar-benar menghentikan (bukan hanya mencatat rencana) setiap bot `active`/`paused` yang bergantung pada koneksi exchange sebelum koneksi itu dihapus (FR-EXC-002) — via query Prisma langsung, tanpa membuat `ExchangeModule` bergantung pada `BotsModule` (menghindari siklus dependency modul).
+- **Sengaja BELUM dibangun di Fase 5a:** komputasi strategi (Strategy Engine yang membaca `parameters` dan menghasilkan sinyal RSI nyata), Risk Engine (validasi sinyal terhadap `riskLimits`), dan mekanisme yang menyambungkan bot ke `OrderService` (Fase 4b) baik manual maupun terjadwal. Bot Fase 5a murni wadah konfigurasi + siklus hidup — **belum benar-benar berdagang**. Itu semua Fase 5b.
+- Test: 12 unit test (`BotsService`) + 1 unit test tambahan (`ExchangeService.disconnect` FR-EXC-002) + 6 e2e test baru (lifecycle penuh, guard pause dari status salah, symbol tak didukung, isolasi antar-user, integrasi lintas-modul disconnect→stop bot, wajib auth) — total 88 unit + 31 e2e lulus di seluruh backend. Smoke test manual membuktikan create→start→(gagal delete saat active, 409)→stop→delete (204) bekerja melawan server & Postgres nyata.
+
+## Fase 5b — Strategy Engine + Risk Engine (rencana)
+- Strategy Engine: komputasi indikator (RSI dulu — satu-satunya `strategyType` yang diterima Fase 5a; MACD/Bollinger sebagai kandidat berikutnya, SRS FR-STRAT-001 menyebutnya sebagai contoh umum) dari candle `MarketDataService`, menghasilkan sinyal buy/sell/hold. Validasi semantik `parameters` (rentang period wajar dkk., FR-STRAT-002) juga di sini — Fase 5a hanya menyimpan JSON generik.
+- Risk Engine: gate wajib (FR-RISK-001) — validasi sinyal terhadap `riskLimits` bot (mis. `maxPositionUsdt`) sebelum diteruskan ke `OrderService`. Sinyal yang ditolak dicatat, tidak pernah diteruskan ke eksekusi.
+- Mekanisme trigger: minimal endpoint manual (`POST /bots/{id}/evaluate`) yang menjalankan satu siklus penuh (fetch candle → strategi → risk → order) secara sinkron dan teruji end-to-end; evaluasi otomatis berkala (bot "berjalan sendiri") dipertimbangkan sebagai tambahan ringan (mis. `@nestjs/schedule` in-process, bukan worker/queue terpisah — belum diperlukan untuk skala MVP) jika waktu/kredit memungkinkan, didokumentasikan eksplisit jika ditunda.
+- FR-RISK-002 (circuit breaker) — Should Have, kandidat ditunda seperti FR-AUTH-003, ambang belum kuantitatif di SRS.
 
 ## Fase 6 — Portfolio & Dashboard (rencana)
 - Hubungkan layar `dashboard_paper_trading_mobile`, `portfolio_alokasi_saldo_scr_06`, `detail_bot_analitik_performa` ke API nyata, ganti data hardcoded di mockup dengan data live dari backend.

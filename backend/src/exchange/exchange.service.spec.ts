@@ -20,6 +20,7 @@ describe('ExchangeService', () => {
   beforeEach(() => {
     prisma = {
       exchangeAccount: { create: jest.fn(), findMany: jest.fn(), findFirst: jest.fn(), delete: jest.fn() },
+      bot: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
     };
     adapter = { checkPermissions: jest.fn() };
     encryption = new CredentialsEncryptionService({ get: () => 'test-key' } as any);
@@ -107,6 +108,22 @@ describe('ExchangeService', () => {
         NotFoundException,
       );
       expect(prisma.exchangeAccount.delete).not.toHaveBeenCalled();
+    });
+
+    it('stops active/paused bots depending on the connection before deleting it (FR-EXC-002)', async () => {
+      prisma.exchangeAccount.findFirst.mockResolvedValue({ id: 'acct-1', userId: 'user-1' });
+      prisma.bot.updateMany.mockResolvedValue({ count: 2 });
+
+      await service.disconnect('user-1', 'acct-1');
+
+      expect(prisma.bot.updateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', exchangeAccountId: 'acct-1', status: { in: ['active', 'paused'] } },
+        data: { status: 'stopped' },
+      });
+      // Bots must be stopped before the account is deleted, not after.
+      const stopOrder = prisma.bot.updateMany.mock.invocationCallOrder[0];
+      const deleteOrder = prisma.exchangeAccount.delete.mock.invocationCallOrder[0];
+      expect(stopOrder).toBeLessThan(deleteOrder);
     });
   });
 });

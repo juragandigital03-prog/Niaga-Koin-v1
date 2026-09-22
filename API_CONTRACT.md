@@ -1,6 +1,6 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), dan Fase 4b (Paper Trading Core) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
+> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), Fase 4b (Paper Trading Core), dan Fase 5a (Bot Lifecycle) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
@@ -34,7 +34,7 @@ Sumber data: Binance public REST (`BinanceMarketDataProvider`, `GET /api/v3/tick
 |---|---|---|---|
 | POST | `/exchange-accounts` | 4a | **DONE** — dilindungi `JwtAuthGuard`. `{exchangeName: "binance", apiKey, apiSecret}` → validasi via signed call ke Binance `/api/v3/account`. Sukses: `201 {id, connectionStatus}`. Key dengan izin withdrawal aktif: `422 {error: "INVALID_PERMISSION_SCOPE"}` (BR-KEY-001, tanpa terkecuali). Kredensial tidak valid: `400 {error: "INVALID_CREDENTIALS"}`. Exchange tidak terjangkau: `503` (fail-safe — key TIDAK PERNAH disimpan tanpa tervalidasi). `exchangeName` di luar whitelist (`binance` satu-satunya untuk saat ini): `400`. |
 | GET | `/exchange-accounts` | 4a | **DONE** — daftar milik pengguna yang login saja (difilter `user_id`), tidak pernah menyertakan credential. |
-| DELETE | `/exchange-accounts/{id}` | 4a | **DONE** — `204` jika berhasil, `404` jika bukan milik pengguna yang login (tidak membocorkan keberadaan akun user lain). Kredensial terenkripsi ikut dihapus (hard delete, bukan soft-delete — user secara eksplisit minta putus koneksi). **TODO (Fase 5):** hentikan bot yang bergantung pada koneksi ini sebelum hapus (FR-EXC-002) — belum relevan karena bot belum ada. |
+| DELETE | `/exchange-accounts/{id}` | 4a | **DONE** — `204` jika berhasil, `404` jika bukan milik pengguna yang login (tidak membocorkan keberadaan akun user lain). Kredensial terenkripsi ikut dihapus (hard delete, bukan soft-delete — user secara eksplisit minta putus koneksi). **Sejak Fase 5a:** bot (`active`/`paused`) yang bergantung pada koneksi ini otomatis dihentikan (`status: stopped`) sebelum koneksi dihapus (FR-EXC-002) — diuji e2e lintas modul. |
 
 Kredensial disimpan terenkripsi AES-256-GCM (`CredentialsEncryptionService`, `backend/src/common/crypto/`) — kunci dari `CREDENTIALS_ENCRYPTION_KEY`, aplikasi menolak start tanpa variabel ini. **Konektivitas Binance sungguhan untuk endpoint ini juga belum diverifikasi di sesi ini** (alasan sama seperti Market Data — sandbox blokir egress) — logic teruji penuh lewat fake adapter ter-inject; verifikasi nyata wajib di mesin pengguna sebelum dianggap tervalidasi produksi.
 
@@ -44,18 +44,22 @@ Kredensial disimpan terenkripsi AES-256-GCM (`CredentialsEncryptionService`, `ba
 | GET | `/wallet` | 4b | **DONE** — dilindungi `JwtAuthGuard`. `200 {balanceUsdt, positions: [{symbol, quantity, avgEntryPrice}]}`. Wallet dibuat otomatis (lazy) dengan saldo default `PAPER_TRADING_DEFAULT_BALANCE_USDT` (10,000 USDT) saat pertama diakses — **tidak butuh koneksi exchange/API key** (SRS §3.8). |
 | POST | `/wallet/reset` | 4b | **DONE** — reset saldo ke default & hapus semua posisi. UI **wajib** menampilkan dialog konfirmasi sebelum memanggil ini (aksi ireversibel — lihat komponen `ResetBalanceModal` Fase 1). |
 | POST | `/orders` | 4b | **DONE** — `{symbol, side: "buy"\|"sell", quantity}` → **selalu** `201`, isi body membedakan hasil: `status: "filled"` (dengan objek `trade`: `executedPrice, executedQuantity, fee, executedAt`) atau `status: "rejected"` (dengan `rejectReason`: `INSUFFICIENT_BALANCE` \| `INSUFFICIENT_POSITION` \| `BELOW_MIN_NOTIONAL` \| `MARKET_DATA_UNAVAILABLE`). Symbol di luar whitelist atau quantity ≤ 0 setelah pembulatan presisi → `400` (input error, order tidak dicatat sama sekali). Setiap percobaan (termasuk yang ditolak) dicatat untuk transparansi riwayat (SRS FR-ORD-002). |
-| GET | `/orders?symbol=` | 4b | **DONE** — riwayat order milik pengguna yang login, terbaru dahulu. (Filter `status`/`from`/`to` dan `botId` masih `TODO` — akan ditambah Fase 5/7 saat relevan.) |
+| GET | `/orders?symbol=` | 4b | **DONE** — riwayat order milik pengguna yang login, terbaru dahulu. (Filter `status`/`from`/`to` dan `botId` masih `TODO` — akan ditambah Fase 5b/7 saat relevan.) |
 
 Model eksekusi: harga dari `MarketDataService` (Fase 3) + slippage searah order (`PAPER_TRADING_SLIPPAGE_PERCENT`, default 0.05%, deterministik — bukan simulasi depth order book) + fee (`PAPER_TRADING_FEE_PERCENT`, default 0.1%). Quantity dibulatkan ke bawah sesuai `PAPER_TRADING_QUANTITY_PRECISION` (default 6 desimal, satu aturan generik untuk semua simbol — bukan LOT_SIZE per-simbol asli Binance, itu TBD). Debit saldo/posisi memakai UPDATE bersyarat (`WHERE amount >= totalCost`) di dalam transaksi database, bukan read-lalu-write terpisah — dua order bersamaan pada wallet yang sama tidak bisa berdua lolos melebihi saldo yang benar-benar tersedia. Tidak ada short selling (SELL divalidasi terhadap quantity posisi yang benar-benar dimiliki).
 
 ## Bots
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| POST | `/bots` | 5 | TODO |
-| GET | `/bots/{id}` | 5 | TODO |
-| PATCH | `/bots/{id}/start` | 5 | TODO |
-| PATCH | `/bots/{id}/stop` | 5 | TODO |
-| DELETE | `/bots/{id}` | 5 | TODO |
+| POST | `/bots` | 5a | **DONE** — `{name, symbol, strategyType, parameters, riskLimits, exchangeAccountId?}` → `201`, bot baru selalu berstatus `stopped` (konfigurasi & pembuatan terjadi bersamaan, tidak ada state "Configured" terpisah dari SDD §9). `strategyType` saat ini hanya `"rsi"` (satu-satunya strategi yang benar-benar diimplementasikan, lihat Fase 5b) — nilai lain → `400`. `parameters`/`riskLimits` divalidasi sebagai objek JSON saja di fase ini; validasi semantik (mis. rentang period RSI wajar) adalah tanggung jawab Strategy Engine di Fase 5b (FR-STRAT-002). Symbol di luar whitelist Market Data → `400`. `exchangeAccountId` yang bukan milik pengguna → `404`. Batas jumlah bot per pengguna (`MAX_BOTS_PER_USER`, default 10) — pengganti sementara untuk limit per-tier langganan yang belum ada (F-SUB-01 masih gap). |
+| GET | `/bots` | 5a | **DONE** — daftar bot milik pengguna yang login, terbaru dahulu. |
+| GET | `/bots/{id}` | 5a | **DONE** — `404` jika bukan milik pengguna yang login. |
+| PATCH | `/bots/{id}/start` | 5a | **DONE** — idempotent: memanggil pada bot yang sudah `active` mengembalikan state saat ini (`200`), bukan error. |
+| PATCH | `/bots/{id}/pause` | 5a | **DONE** (baru — tidak ada di SDD §7, ditambahkan karena SDD §9 lifecycle punya state `Paused` terpisah dari `Stopped`, dan master prompt eksplisit menyebut "pause" sebagai aksi lifecycle sendiri). Hanya valid dari status `active`; idempotent jika sudah `paused`; `400` jika dipanggil dari `stopped`. |
+| PATCH | `/bots/{id}/stop` | 5a | **DONE** — idempotent dari status manapun. |
+| DELETE | `/bots/{id}` | 5a | **DONE** — `204` jika berhasil. `409` jika bot belum `stopped` (harus dihentikan dulu — bot yang masih berjalan tidak boleh langsung dihapus). |
+
+**Belum dibangun di Fase 5a (sengaja, itu Fase 5b):** eksekusi strategi sungguhan (Strategy Engine yang membaca `parameters` dan menghasilkan sinyal RSI), Risk Engine (validasi sinyal terhadap `riskLimits`), dan mekanisme trigger (manual atau berjadwal) yang menyambungkan bot ke `OrderService` (Fase 4b). Bot Fase 5a murni **wadah konfigurasi + siklus hidup** — belum benar-benar "berdagang".
 
 ## Portfolio & Orders
 | Method | Path | Fase | Status |

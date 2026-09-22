@@ -2,7 +2,7 @@
 
 > Dokumen ini adalah ringkasan proyek yang dapat digunakan kembali di setiap fase, sesuai ATURAN EFISIENSI KREDIT AI pada MASTER_PROMPT. **Jangan membaca ulang seluruh PRD/SRS/SDD di fase berikutnya — baca dokumen ini dulu.**
 >
-> Terakhir diperbarui: 2026-09-22 (Fase 4b — Paper Trading Core, DONE)
+> Terakhir diperbarui: 2026-09-22 (Fase 5a — Bot Lifecycle, DONE)
 
 ---
 
@@ -80,7 +80,7 @@ Tidak ada mockup untuk: Registrasi/Login/OTP (F-AUTH-01), 2FA setup (F-AUTH-02, 
 
 ## 4. Status Backend
 
-**Fase 1 (Foundation), Fase 2 (Authentication), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), dan Fase 4b (Paper Trading Core) selesai.** Backend NestJS modular monolith berjalan, dengan:
+**Fase 1 (Foundation), Fase 2 (Authentication), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), Fase 4b (Paper Trading Core), dan Fase 5a (Bot Lifecycle) selesai.** Backend NestJS modular monolith berjalan, dengan:
 - `GET /api/v1/health` — mengecek konektivitas database, mengembalikan `tradingMode: "paper-only"` dan `liveTradingEnabled: false` secara eksplisit di setiap response.
 - **Kill switch keselamatan finansial di level boot:** `backend/src/config/env.validation.ts` membuat aplikasi **menolak untuk start** jika `LIVE_TRADING_ENABLED=true` — diverifikasi dengan test otomatis dan smoke test manual (proses exit dengan error, bukan diam-diam mengizinkan).
 - Prisma + PostgreSQL terhubung, migration diterapkan (`init_users`, `auth_fields`).
@@ -90,9 +90,10 @@ Tidak ada mockup untuk: Registrasi/Login/OTP (F-AUTH-01), 2FA setup (F-AUTH-02, 
 - **Market Data (Fase 3):** `GET /market-data/symbols`, `GET /market-data/ticker/{symbol}`, `GET /market-data/candles/{symbol}` — publik (tanpa auth). Adapter Binance (`BinanceMarketDataProvider`) di belakang interface `MarketDataProvider` (pola adapter SDD §5.2, siap tambah exchange lain tanpa ubah service/controller). Retry terbatas + timeout + cache in-memory per simbol. Symbol whitelist tervalidasi sebelum memanggil exchange. Kegagalan koneksi → `503` eksplisit (fail-safe), bukan data palsu. **Konektivitas nyata ke `api.binance.com` tidak bisa diverifikasi di sandbox ini** (egress diblokir kebijakan organisasi — dikonfirmasi via curl, `403 connect_rejected`) — logic sudah teruji penuh via mock/fake provider, tapi pengguna **wajib verifikasi manual di mesin sendiri** sebelum menganggap ini tervalidasi end-to-end sungguhan.
 - **Exchange Account Connection (Fase 4a):** `POST /exchange-accounts`, `GET /exchange-accounts`, `DELETE /exchange-accounts/{id}` — dilindungi `JwtAuthGuard`, difilter per `userId` (satu user tidak bisa melihat/hapus akun exchange user lain — diuji e2e). Kredensial dienkripsi AES-256-GCM sebelum disimpan (`CredentialsEncryptionService`, kunci dari `CREDENTIALS_ENCRYPTION_KEY`, app gagal start jika env ini kosong). Adapter Binance terautentikasi (`BinanceExchangeAdapter`) memvalidasi key via signed call ke `/api/v3/account`; key dengan izin withdrawal **selalu ditolak** (BR-KEY-001, `422 INVALID_PERMISSION_SCOPE`) — tidak pernah disimpan. Kredensial tidak valid → `400`; exchange tak terjangkau → `503` (key tidak pernah diterima tanpa tervalidasi). Refactor kecil: helper retry/timeout dipindah ke `common/http/` agar dipakai bareng Market Data & Exchange (menghindari duplikasi).
 - **Paper Trading Core (Fase 4b):** `GET /wallet`, `POST /wallet/reset`, `POST /orders`, `GET /orders?symbol=` — dilindungi `JwtAuthGuard`. Wallet virtual (10.000 USDT default) dibuat lazy, **tidak butuh koneksi exchange/API key** (SRS §3.8 ditegakkan, bukan cuma didokumentasikan). Simulator order market: harga dari `MarketDataService` + slippage deterministik + fee, semua dapat dikonfigurasi via env. **Setiap percobaan order dicatat**, termasuk yang ditolak — saldo tidak cukup, posisi tidak cukup (tidak ada short selling), di bawah minimum notional, atau data pasar tak tersedia. Debit saldo/posisi pakai UPDATE bersyarat di dalam transaksi database (aman dari race condition dua order bersamaan). Model Prisma `Balance`/`Position`/`Order`/`Trade` mengikuti pola SDD §6.2 (satu set tabel untuk paper & live, dibedakan `is_paper`) dengan satu penyimpangan terdokumentasi: diikat ke `userId`, bukan `exchangeAccountId`/`botId` (karena paper trading tidak wajib exchange account) — lihat `IMPLEMENTATION_PLAN.md` Fase 4b untuk detail lengkap.
-- Model database: `User` (+role, lockout), `OtpChallenge`, `ExchangeAccount`, `ApiCredential`, `Balance`, `Position`, `Order`, `Trade`.
+- **Bot Lifecycle (Fase 5a):** `POST/GET /bots`, `GET /bots/{id}`, `PATCH .../start|pause|stop`, `DELETE /bots/{id}` — dilindungi `JwtAuthGuard`, difilter per `userId`. Bot baru selalu `stopped`; `start`/`stop` idempotent; `pause` hanya valid dari `active`; hapus hanya diizinkan saat `stopped` (`409` jika masih berjalan). Batas jumlah bot per pengguna (`MAX_BOTS_PER_USER`) sebagai pengganti sementara limit langganan (F-SUB-01 masih gap). **Menuntaskan TODO Fase 4a:** memutuskan koneksi exchange kini benar-benar menghentikan bot `active`/`paused` yang bergantung padanya (FR-EXC-002), diuji e2e lintas modul. **Bot ini belum benar-benar berdagang** — dia murni wadah konfigurasi (`strategyType`, `parameters`, `riskLimits` disimpan sebagai JSON) + siklus hidup; Strategy Engine dan Risk Engine yang menafsirkan konfigurasi itu dan benar-benar memanggil `OrderService` adalah Fase 5b.
+- Model database: `User` (+role, lockout), `OtpChallenge`, `ExchangeAccount`, `ApiCredential`, `Balance`, `Position`, `Order`, `Trade`, `Bot`.
 
-Modul fitur produk lanjutan (bot lifecycle, strategy engine, dst.) **belum dibangun** — itu scope Fase 5 dan seterusnya.
+Modul fitur produk lanjutan (strategy engine, risk engine, dst.) **belum dibangun** — itu scope Fase 5b dan seterusnya.
 
 ## 5. Keputusan Arsitektur — DIKONFIRMASI (2026-09-21)
 
@@ -118,7 +119,8 @@ Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh
 - API key/secret exchange pengguna dienkripsi AES-256-GCM at-rest (NFR-SEC-005/006), kunci terpisah dari database (env var `CREDENTIALS_ENCRYPTION_KEY`, bukan hardcoded/disimpan di kolom yang sama). Key dengan izin withdrawal **selalu ditolak sebelum disimpan** (BR-KEY-001) — dibuktikan lewat unit + e2e test, bukan cuma dijanjikan di dokumen.
 - Tidak ada secret di source/log/DB plaintext: `backend/.env` (berisi kredensial dev lokal) ada di `.gitignore` root sejak commit pertama kode; log pino me-redact header `authorization`/`cookie` (diverifikasi lagi di Fase 2 — token JWT di header `Authorization` tampil `[Redacted]` di log e2e).
 - Password & kode OTP di-hash (bcryptjs) — tidak pernah plaintext di DB. Error login tidak pernah membedakan "email tidak ada" vs "password salah" (cegah user enumeration).
-- Isolasi data antar pengguna: query `exchange-accounts`, `wallet`, dan `orders` difilter `userId` di WHERE clause — satu pengguna tidak bisa melihat/mengubah data pengguna lain (diuji e2e eksplisit untuk ketiganya, bukan asumsi).
+- Isolasi data antar pengguna: query `exchange-accounts`, `wallet`, `orders`, dan `bots` difilter `userId` di WHERE clause — satu pengguna tidak bisa melihat/mengubah data pengguna lain (diuji e2e eksplisit untuk semuanya, bukan asumsi).
+- Bot (Fase 5a) **belum bisa mengeksekusi apa pun secara otomatis** — status `active` hanya menandai "siap dievaluasi", tapi belum ada Strategy Engine/Risk Engine/mekanisme trigger yang benar-benar memanggil `OrderService`. Tidak ada risiko "bot lepas kendali" karena bot belum benar-benar bisa bertindak — itu baru berlaku mulai Fase 5b, dan Risk Engine wajib ada SEBELUM bot bisa memicu order sungguhan (FR-RISK-001 sebagai gate, bukan opsional).
 - Kolom `is_paper` kini benar-benar ditegakkan di tabel transaksional (`Balance`, `Position`, `Order`, `Trade` — dibuat Fase 4b), bukan cuma direncanakan.
 
 ## 7. Cara Menjalankan Proyek Saat Ini
@@ -131,8 +133,9 @@ Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh
 5. Market data: `curl http://localhost:3000/api/v1/market-data/ticker/BTCUSDT`. **Penting:** di mesin pengguna (bukan sandbox ini) ini akan benar-benar memanggil Binance — pastikan koneksi internet aktif; jika belum pernah dicoba, verifikasi dulu dengan `curl https://api.binance.com/api/v3/ping` di luar aplikasi.
 6. Koneksi exchange: `POST /api/v1/exchange-accounts` (header `Authorization: Bearer <accessToken>`, body `{exchangeName:"binance", apiKey, apiSecret}`) — sama seperti market data, ini benar-benar memanggil Binance di mesin pengguna.
 7. Paper trading: `GET /api/v1/wallet` (saldo virtual dibuat otomatis, tidak butuh koneksi exchange) → `POST /api/v1/orders` (body `{symbol:"BTCUSDT", side:"buy", quantity:0.01}`) → `GET /api/v1/orders`. Butuh Binance benar-benar terjangkau agar order bisa `filled` (bukan `rejected` dengan alasan `MARKET_DATA_UNAVAILABLE`).
+8. Bot: `POST /api/v1/bots` (body `{name, symbol:"BTCUSDT", strategyType:"rsi", parameters:{period:14}, riskLimits:{maxPositionUsdt:500}}`) → `PATCH /api/v1/bots/{id}/start` → `GET /api/v1/bots`. **Catatan:** bot Fase 5a belum benar-benar mengeksekusi strategi/order — murni siklus hidup (lihat `FEATURE_MATRIX.md`).
 
-Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test (75), e2e test (25, melawan PostgreSQL nyata), production build, boot smoke test, screenshot visual dashboard (Fase 1), alur auth/market-data/exchange/paper-trading penuh via curl manual — termasuk pembuktian nyata jalur fail-safe (kill switch live trading, 503 saat exchange tak terjangkau, order ditolak aman tanpa menyentuh saldo) — lihat `CHANGELOG.md` untuk rincian per fase.
+Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test (88), e2e test (31, melawan PostgreSQL nyata), production build, boot smoke test, screenshot visual dashboard (Fase 1), alur auth/market-data/exchange/paper-trading/bot penuh via curl manual — termasuk pembuktian nyata jalur fail-safe (kill switch live trading, 503 saat exchange tak terjangkau, order ditolak aman tanpa menyentuh saldo, disconnect exchange otomatis menghentikan bot terkait) — lihat `CHANGELOG.md` untuk rincian per fase.
 
 ## 8. Dokumen Terkait
 

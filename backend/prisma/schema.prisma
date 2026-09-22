@@ -47,6 +47,7 @@ model User {
   balances         Balance[]
   positions        Position[]
   orders           Order[]
+  bots             Bot[]
 
   @@map("users")
 }
@@ -94,6 +95,7 @@ model ExchangeAccount {
   updatedAt        DateTime                 @updatedAt @map("updated_at")
 
   credential ApiCredential?
+  bots       Bot[]
 
   @@index([userId])
   @@map("exchange_accounts")
@@ -219,4 +221,43 @@ model Trade {
   executedAt       DateTime @default(now()) @map("executed_at")
 
   @@map("trades")
+}
+
+// Fase 5a: Bot Lifecycle. Konfigurasi (strategi/parameter/risk_limits)
+// disediakan lengkap saat pembuatan (bukan alur "Configured" terpisah dari
+// SDD §9) — bot baru langsung berstatus `stopped` (siap, belum berjalan).
+// Strategy Engine & Risk Engine yang benar-benar MEMBACA `parameters`/
+// `riskLimits` untuk menghasilkan & memvalidasi sinyal adalah Fase 5b —
+// Fase 5a hanya menyimpan konfigurasi dan mengelola siklus hidupnya.
+enum BotStatus {
+  stopped
+  active
+  paused
+}
+
+/// Baru mendukung RSI (SRS FR-STRAT-001 menyebut RSI/MACD/Bollinger
+/// sebagai contoh indikator umum) — ditambah MACD dkk. saat benar-benar
+/// diimplementasikan (Fase 5b), bukan didaftarkan lebih dulu tanpa logic.
+enum StrategyType {
+  rsi
+}
+
+model Bot {
+  id                String           @id @default(uuid())
+  userId            String           @map("user_id")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exchangeAccountId String?          @map("exchange_account_id")
+  exchangeAccount   ExchangeAccount? @relation(fields: [exchangeAccountId], references: [id], onDelete: SetNull)
+  name              String
+  symbol            String
+  strategyType      StrategyType     @map("strategy_type")
+  parameters        Json
+  riskLimits        Json             @map("risk_limits")
+  status            BotStatus        @default(stopped)
+  isPaper           Boolean          @default(true) @map("is_paper")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("bots")
 }

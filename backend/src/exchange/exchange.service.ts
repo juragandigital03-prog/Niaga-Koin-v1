@@ -109,9 +109,21 @@ export class ExchangeService {
       throw new NotFoundException('Koneksi exchange tidak ditemukan');
     }
 
-    // TODO(Fase 5): once bots reference exchange_account_id, stop any bots
-    // depending on this connection before deleting it (FR-EXC-002
-    // acceptance criteria). No bots exist yet, so nothing to stop today.
+    // FR-EXC-002: disconnecting must stop every bot depending on this
+    // connection first — not just detach them. Direct Prisma call rather
+    // than injecting BotsService, to avoid a module dependency cycle
+    // (BotsModule doesn't need to depend back on ExchangeModule either).
+    const stopped = await this.prisma.bot.updateMany({
+      where: { userId, exchangeAccountId, status: { in: ['active', 'paused'] } },
+      data: { status: 'stopped' },
+    });
+    if (stopped.count > 0) {
+      this.logger.warn(
+        { userId, exchangeAccountId, botsStopped: stopped.count },
+        'Bots stopped because their exchange connection is being disconnected',
+      );
+    }
+
     await this.prisma.exchangeAccount.delete({ where: { id: exchangeAccountId } });
     this.logger.info({ userId, exchangeAccountId }, 'Exchange account disconnected');
   }

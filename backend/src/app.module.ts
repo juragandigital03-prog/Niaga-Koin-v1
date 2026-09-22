@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { MarketDataModule } from './market-data/market-data.module';
 import { ExchangeModule } from './exchange/exchange.module';
 import { PaperTradingModule } from './paper-trading/paper-trading.module';
+import { BotsModule } from './bots/bots.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PaperTradingModule } from './paper-trading/paper-trading.module';
     MarketDataModule,
     ExchangeModule,
     PaperTradingModule,
+    BotsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

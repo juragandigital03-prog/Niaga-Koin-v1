@@ -152,6 +152,24 @@ curl -X POST http://localhost:3000/api/v1/wallet/reset -H "Authorization: Bearer
 
 Order butuh harga dari Binance (lewat Market Data, Fase 3) — kalau `status` yang kembali adalah `"rejected"` dengan `rejectReason: "MARKET_DATA_UNAVAILABLE"`, itu berarti backend tidak bisa menjangkau Binance saat itu (fail-safe yang disengaja, saldo Anda tidak tersentuh) — cek koneksi internet Anda.
 
+## Mengelola Bot (Fase 5a)
+
+**Catatan:** bot di fase ini murni wadah konfigurasi + siklus hidup — belum benar-benar mengeksekusi strategi/order (itu Fase 5b).
+
+```bash
+# Buat bot baru (selalu mulai berstatus "stopped")
+curl -X POST http://localhost:3000/api/v1/bots \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"BTC Trend Scalper","symbol":"BTCUSDT","strategyType":"rsi","parameters":{"period":14,"oversold":30,"overbought":70},"riskLimits":{"maxPositionUsdt":500}}'
+
+curl http://localhost:3000/api/v1/bots -H "Authorization: Bearer <accessToken>"                       # daftar bot Anda
+curl -X PATCH http://localhost:3000/api/v1/bots/<id>/start -H "Authorization: Bearer <accessToken>"    # jalankan
+curl -X PATCH http://localhost:3000/api/v1/bots/<id>/pause -H "Authorization: Bearer <accessToken>"    # jeda (harus dari status active)
+curl -X PATCH http://localhost:3000/api/v1/bots/<id>/stop -H "Authorization: Bearer <accessToken>"     # hentikan
+curl -X DELETE http://localhost:3000/api/v1/bots/<id> -H "Authorization: Bearer <accessToken>"         # hapus (harus berstatus stopped, kalau tidak → 409)
+```
+
 ## Menjalankan Frontend
 
 ```bash
@@ -212,6 +230,9 @@ docker compose down -v
 | `POST /orders` mengembalikan `201` tapi `status:"rejected", rejectReason:"MARKET_DATA_UNAVAILABLE"` | Backend tidak bisa menjangkau Binance untuk mengambil harga | Ini bukan bug — order memang selalu `201`, hasilnya ada di `status`/`rejectReason`. Cek koneksi internet, lalu coba lagi |
 | `POST /orders` mengembalikan `rejected, INSUFFICIENT_BALANCE` padahal saldo terlihat cukup | Fee + slippage membuat total biaya sedikit lebih tinggi dari notional murni | Perbesar sedikit saldo (via reset) atau kecilkan quantity — ini validasi yang benar, bukan bug |
 | `POST /orders` mengembalikan `400` | Symbol di luar whitelist, atau quantity ≤ 0 setelah dibulatkan ke `PAPER_TRADING_QUANTITY_PRECISION` | Cek `GET /market-data/symbols`, atau perbesar quantity |
+| `POST /bots` mengembalikan `400` "Batas jumlah bot tercapai" | Sudah mencapai `MAX_BOTS_PER_USER` (default 10) | Hapus bot yang tidak dipakai (harus `stopped` dulu), atau naikkan `MAX_BOTS_PER_USER` di `.env` |
+| `PATCH /bots/{id}/pause` mengembalikan `400` | Bot belum berstatus `active` (mis. masih `stopped`) | `pause` hanya valid dari `active` — panggil `start` dulu |
+| `DELETE /bots/{id}` mengembalikan `409` | Bot masih `active`/`paused` | Panggil `PATCH .../stop` dulu, baru hapus |
 
 ## Struktur Proyek
 

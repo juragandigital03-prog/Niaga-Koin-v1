@@ -2,6 +2,26 @@
 
 Format: setiap entri merepresentasikan satu fase kerja (bukan setiap commit kecil).
 
+## [Fase 5a] Bot Lifecycle — 2026-09-22
+### Ditambahkan
+- Model Prisma `Bot` (migration `bot_lifecycle`) — `name`, `symbol`, `strategyType` (enum, hanya `rsi` untuk saat ini), `parameters`/`riskLimits` (JSON generik), `exchangeAccountId` opsional, `status` (`stopped`/`active`/`paused`), `isPaper`.
+- `BotsService` (`backend/src/bots/`) — `create` (validasi symbol whitelist, ownership `exchangeAccountId`, batas `MAX_BOTS_PER_USER`), `list`, `get`, `start`/`pause`/`stop` (idempotent sesuai aturan), `remove` (hanya saat `stopped`).
+- Endpoint baru: `POST/GET /api/v1/bots`, `GET /api/v1/bots/{id}`, `PATCH /api/v1/bots/{id}/start|pause|stop`, `DELETE /api/v1/bots/{id}` — seluruhnya `JwtAuthGuard`, difilter per `userId`.
+- Env baru: `MAX_BOTS_PER_USER` (default 10) — pengganti sementara limit tier langganan (F-SUB-01 masih gap requirement).
+- **`PATCH .../pause`** — endpoint baru di luar skeleton SDD §7 (yang hanya menyebut start/stop) karena SDD §9 lifecycle-nya sendiri punya state `Paused` terpisah dari `Stopped`, dan master prompt eksplisit menyebut "pause" sebagai aksi lifecycle tersendiri.
+
+### Menuntaskan TODO dari Fase 4a
+- `ExchangeService.disconnect()` sekarang benar-benar menghentikan setiap bot `active`/`paused` yang bergantung pada koneksi exchange sebelum koneksi itu dihapus (FR-EXC-002 acceptance criteria) — dulunya hanya komentar `TODO(Fase 5)` karena belum ada model Bot untuk dirujuk. Diimplementasikan lewat query Prisma langsung di `ExchangeService` (bukan meng-inject `BotsService`) supaya `ExchangeModule` dan `BotsModule` tidak saling bergantung.
+
+### Keputusan Desain Penting
+- **Fase 5 dipecah jadi 5a (lifecycle) dan 5b (strategi+risk)** — pola yang sama seperti Fase 4a/4b, menjaga patch tetap kecil dan reviewable sesuai aturan efisiensi kredit master prompt.
+- **Bot Fase 5a murni wadah konfigurasi + siklus hidup — belum benar-benar berdagang.** `parameters`/`riskLimits` disimpan sebagai JSON generik dan hanya divalidasi strukturnya (harus objek), bukan isinya — validasi semantik (mis. rentang period RSI wajar, FR-STRAT-002) adalah tanggung jawab Strategy Engine di Fase 5b yang benar-benar menafsirkan field-field itu. Status `active` pada bot Fase 5a **tidak memicu eksekusi apa pun** — belum ada mekanisme yang membaca status ini dan bertindak.
+- `exchangeAccountId` pada Bot bersifat opsional — bot paper trading tidak wajib punya koneksi exchange (konsisten dengan keputusan yang sama di Fase 4b untuk `Balance`/`Position`, selaras SRS §3.8).
+
+### Pengujian (hasil pada sesi ini)
+- `npx tsc --noEmit` PASS, `npx eslint` PASS (0 error), `npx jest` PASS (88/88 unit test, +13 baru: BotsService 12 + ExchangeService disconnect-stops-bots 1), `npx jest --config test/jest-e2e.json` PASS (31/31 e2e test, +6 baru: lifecycle penuh create→start→pause→stop→delete, guard pause dari status salah, symbol tak didukung, isolasi antar-user, integrasi lintas-modul disconnect exchange → bot berhenti otomatis, wajib auth), `npx nest build` PASS.
+- Smoke test manual melawan server & PostgreSQL nyata: register→login→`POST /bots`→`PATCH .../start`→`GET /bots` (status `active`)→`DELETE` saat masih aktif (`409`, ditolak dengan benar)→`PATCH .../stop`→`DELETE` (`204`, berhasil).
+
 ## [Fase 4b] Paper Trading Core — 2026-09-22
 ### Ditambahkan
 - Model Prisma `Balance`, `Position`, `Order`, `Trade` (migration `paper_trading_core`) — satu set tabel untuk paper maupun live (dibedakan `is_paper`, pola SDD §6.2), bukan tabel terpisah.
