@@ -29,6 +29,12 @@ cp ../.env.example .env
 
 `backend/.env` tidak pernah di-commit (lihat `.gitignore`). `LIVE_TRADING_ENABLED` **wajib** `false` — aplikasi akan menolak untuk start jika diset `true` (lihat `backend/src/config/env.validation.ts`).
 
+```bash
+cd frontend
+cp .env.example .env
+# VITE_API_BASE_URL default sudah cocok untuk backend lokal di atas.
+```
+
 ## Menyalakan Database
 
 ```bash
@@ -181,7 +187,7 @@ cd frontend
 npm run dev
 ```
 
-Frontend berjalan di `http://localhost:5173`. Fase 1 ini hanya menampilkan halaman Dashboard sebagai replika desain (`docs/design/stitch-export/dashboard_paper_trading_mobile`) dengan data contoh (mock) — belum terhubung ke backend. Integrasi data nyata dilakukan bertahap sesuai `IMPLEMENTATION_PLAN.md`.
+Frontend berjalan di `http://localhost:5173` (butuh backend berjalan di `http://localhost:3000`, lihat bagian sebelumnya). Kunjungan pertama otomatis redirect ke `/login` — daftar lewat `/register` (kode OTP muncul di log terminal **backend**, bukan email sungguhan — dev-only, lihat bagian "Mencoba Alur Autentikasi" di atas), verifikasi di `/verify-otp`, lalu masuk. Setelah login, Dashboard tampil — **masih menampilkan data contoh (mock)**, belum terhubung ke `GET /wallet`/`GET /bots` sungguhan (itu Fase 6b, lihat `IMPLEMENTATION_PLAN.md`). Tombol avatar di header untuk logout.
 
 ## Menjalankan Test
 
@@ -243,6 +249,10 @@ docker compose down -v
 | `POST /bots/{id}/evaluate` mengembalikan `200` dengan `blockedReason:"MARKET_DATA_UNAVAILABLE"` | Backend tidak bisa menjangkau Binance untuk candle | Ini bukan bug — fail-safe yang sama seperti market data/paper trading. Cek `curl https://api.binance.com/api/v3/ping` |
 | `POST /bots/{id}/evaluate` mengembalikan `200` dengan `blockedReason:"MAX_POSITION_EXCEEDED"` | Posisi `userId+symbol` saat ini sudah mencapai/melebihi `riskLimits.maxPositionUsdt` bot | Ini Risk Engine bekerja sesuai desain, bukan bug — perbesar `maxPositionUsdt` atau kurangi posisi lewat `POST /orders` (sell) |
 | `POST /bots/{id}/evaluate` mengembalikan `200` dengan `blockedReason:"NO_OPEN_POSITION"` | Sinyal `sell` muncul tapi tidak ada posisi `userId+symbol` untuk ditutup | Ini bukan bug — beli dulu (manual lewat `POST /orders` atau tunggu sinyal `buy`) sebelum sinyal `sell` bisa dieksekusi |
+| Buka `http://localhost:5173/` langsung redirect ke `/login`, meski sudah pernah login | Sesi di `localStorage` browser kosong/beda browser/mode incognito | Ini bukan bug — login lagi. Sesi memang per-browser, tidak disinkronkan lintas perangkat |
+| Frontend menampilkan "Failed to fetch" / network error saat login-register | Backend tidak berjalan, atau `VITE_API_BASE_URL` di `frontend/.env` tidak cocok dengan port backend | Pastikan `cd backend && npm run start:dev` aktif; cek `frontend/.env` |
+| Kode OTP tidak pernah sampai ke halaman `/verify-otp` | Wajar — OTP dev-only dicatat di **log terminal backend**, bukan dikirim ke email sungguhan (belum ada provider nyata, lihat Fase 7) | Cek terminal tempat `npm run start:dev` berjalan, cari baris `[DEV OTP ...] destination=... code=...` |
+| Refresh halaman `/verify-otp` redirect balik ke `/register` | Disengaja — `registrationToken` cuma ada di router state (tidak disimpan), dan token backend memang berumur pendek (~5 menit) | Daftar ulang untuk mendapat kode/token baru |
 
 ## Struktur Proyek
 

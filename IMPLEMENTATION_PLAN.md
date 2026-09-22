@@ -14,7 +14,8 @@
 | 4b | Paper Trading Core | **DONE** |
 | 5a | Bot Lifecycle | **DONE** |
 | 5b | Strategy Engine + Risk Engine | **DONE** |
-| 6 | Portfolio & Dashboard | NOT STARTED |
+| 6a | Frontend Foundation: API Client + Auth Flow | **DONE** |
+| 6b | Portfolio & Dashboard — hubungkan ke API nyata | NOT STARTED |
 | 7 | History, Notification, Admin | NOT STARTED |
 | 8 | Hardening & QA | NOT STARTED |
 | 9 | Local Release | NOT STARTED |
@@ -106,8 +107,23 @@ Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 - Test: 26 unit test baru (`RsiStrategy` 9, `StrategyEngineService` 2, `RiskEngineService` 8, `BotEvaluationService` 7) + 2 unit test baru di `BotsService` (validasi parameter/riskLimits saat create) + 5 e2e test baru (`bot-evaluation.e2e-spec.ts`, file terpisah dari `bots.e2e-spec.ts` agar tidak melebihi limit throttle `/auth/register` 10/60s) — total 116 unit + 36 e2e lulus di seluruh backend. Smoke test manual terhadap server & Postgres nyata membuktikan: validasi parameter RSI/riskLimits saat create (400), guard bot-harus-active saat evaluate (400), dan fail-safe `MARKET_DATA_UNAVAILABLE` saat Binance sungguhan tak terjangkau (200, bukan data karangan).
 - **Catatan teknis (bukan bug produksi, ditemukan & diperbaiki selama fase ini):** `process.env` dibagi antar file e2e dalam satu Jest worker — override env var pakai `??=` di satu file bisa no-op kalau file lain sudah lebih dulu memicu `ConfigModule` menetapkan nilai dari `.env`. Fix: `bot-evaluation.e2e-spec.ts` memakai assignment `=` (bukan `??=`) untuk `MARKET_DATA_CACHE_TTL_MS`, didokumentasikan sebagai komentar di kode.
 
-## Fase 6 — Portfolio & Dashboard (rencana)
-- Hubungkan layar `dashboard_paper_trading_mobile`, `portfolio_alokasi_saldo_scr_06`, `detail_bot_analitik_performa` ke API nyata, ganti data hardcoded di mockup dengan data live dari backend.
+## Fase 6a — Frontend Foundation: API Client + Auth Flow — **DONE** (2026-09-22)
+- Dipecah dari Fase 6 gabungan: frontend Fase 1 tidak punya infrastruktur sama sekali (tanpa router, tanpa API client, tanpa auth) — menghubungkan layar dashboard ke API nyata (rencana Fase 6 semula) tidak mungkin tanpa fondasi ini lebih dulu. Mengikuti pola pemecahan yang sama seperti Fase 4a/4b dan 5a/5b.
+- `frontend/src/lib/api.ts` — fetch wrapper tipis (`apiFetch`), `ApiError` (status + message, menggabungkan array pesan validasi class-validator jadi satu string), token disimpan di modul-level variable (`setAccessToken`) supaya semua pemanggilan `apiFetch` melihat token yang sama tanpa perlu React state di setiap tempat.
+- `frontend/src/lib/auth.ts` — `register`/`verifyOtp`/`login`/`getMe`, tipis di atas `apiFetch`, sesuai kontrak persis di `API_CONTRACT.md` (tidak menambah field yang tidak ada di respons backend).
+- `frontend/src/lib/AuthContext.tsx` — React Context sesi: `accessToken`/`refreshToken` di `localStorage` (`gain_access_token`/`gain_refresh_token`), hidrasi saat mount (validasi token tersimpan lewat `GET /users/me`, hapus diam-diam kalau kedaluwarsa/invalid), `login()`, `logout()`.
+- Routing (`react-router-dom` baru ditambahkan — dependency pertama di luar React/Vite/Tailwind): `/login`, `/register`, `/verify-otp` publik; `/` (Dashboard) di belakang `ProtectedRoute` (redirect ke `/login` kalau belum ada sesi).
+- Halaman baru: `LoginPage`, `RegisterPage`, `VerifyOtpPage` — **tidak ada mockup Stitch untuk layar ini** (lihat `PROJECT_STATUS.md` §3.3, F-AUTH-01 tidak punya desain), dibangun memakai design token yang sama (`tailwind.config.js`) agar konsisten visual, bukan gaya baru yang diciptakan sendiri. `VerifyOtpPage` menampilkan catatan jujur bahwa OTP dev-only dicatat di log backend, bukan email sungguhan (konsisten dengan `ConsoleOtpProvider`, bukan klaim palsu "cek email Anda").
+- `AppHeader` — tombol avatar sekarang memicu `logout()` (satu-satunya kontrol sesi yang ditambahkan; tidak ada mockup untuk menu profil/pusat keamanan — lihat gap yang sama di §3.3).
+- Env baru: `frontend/.env.example` (`VITE_API_BASE_URL`, default `http://localhost:3000/api/v1`).
+- **Dashboard tetap memakai data mock** — mengganti `MOCK_BOTS`/saldo hardcoded dengan data live (`GET /wallet`, `GET /bots`) adalah scope Fase 6b, bukan fase ini.
+- Test: 21 test baru (`api.ts` 7, `AuthContext` 5, `ProtectedRoute` 2, `LoginPage` 2, `RegisterPage` 2, `VerifyOtpPage` 3) — total 30 test lulus di seluruh 9 file test frontend (termasuk 9 test pre-existing dari Fase 1: `BalanceCard`, `BotList`, `PaperModeBanner`). **Smoke test manual lewat browser sungguhan** (Playwright/Chromium terhadap `vite dev` + backend nyata, bukan cuma unit test bermock): alur penuh register → baca kode OTP dari log backend nyata → verify-otp → login → dashboard render → sesi bertahan setelah hard reload → logout → redirect ke `/login` → akses `/` setelah logout otomatis redirect lagi ke `/login`; juga memverifikasi pesan error asli backend ("Email atau password salah") tampil di UI untuk login gagal.
+- **Catatan lingkungan (bukan bug produksi):** font Material Symbols tidak bisa dimuat di sandbox ini (egress dibatasi, isu yang sama seperti screenshot smoke test Fase 1) — ikon tampil sebagai teks literal dan sempat menutupi tombol avatar secara visual saat smoke test, menyebabkan Playwright gagal melakukan hit-test klik normal pada tombol logout. Diatasi di skrip smoke test dengan memanggil `.click()` langsung pada elemen DOM (bukan simulasi klik berbasis koordinat) — bukan perubahan kode aplikasi, karena font akan dimuat normal di browser pengguna sungguhan dengan akses internet biasa.
+
+## Fase 6b — Portfolio & Dashboard: hubungkan ke API nyata (rencana)
+- Hubungkan layar `dashboard_paper_trading_mobile`, `portfolio_alokasi_saldo_scr_06`, `detail_bot_analitik_performa` ke API nyata (`GET /wallet`, `GET /bots`, `GET /orders`), ganti `MOCK_BOTS`/saldo hardcoded di `DashboardPage` dengan data live dari backend.
+- Selaraskan `Bot` type frontend (`running`/`paused`/`stopped`) dengan enum backend (`active`/`paused`/`stopped`) — `BotList` saat ini memperlakukan status apa pun selain `paused` sebagai "RUNNING", termasuk `stopped`, yang perlu state visual sendiri sebelum terhubung ke data nyata.
+- `/api/v1/portfolio` (F-PORT-01, masih TODO di `FEATURE_MATRIX.md`) — perlu diputuskan dulu: endpoint agregasi baru di backend, atau cukup pakai `GET /wallet` yang sudah ada (single-exchange/paper only saat ini, agregasi multi-exchange belum relevan sampai ada lebih dari satu exchange terhubung).
 
 ## Fase 7 — History, Notification, Admin (rencana)
 - Layar `riwayat_order_simulasi_slippage_scr_07` → FR-ORD-002. Notifikasi (FR-NOTIF-001, channel diusulkan Telegram/email — perlu konfirmasi). Admin & audit log → layar `pusat_keamanan_*`.

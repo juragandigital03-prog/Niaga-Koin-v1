@@ -1,6 +1,6 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), Fase 4b (Paper Trading Core), Fase 5a (Bot Lifecycle), dan Fase 5b (Strategy Engine + Risk Engine) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
+> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), Fase 4b (Paper Trading Core), Fase 5a (Bot Lifecycle), Fase 5b (Strategy Engine + Risk Engine), dan Fase 6a (Frontend Foundation: API Client + Auth Flow) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
@@ -13,6 +13,8 @@ Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 | POST | `/auth/2fa/verify` | — | **DITUNDA** (bukan TODO biasa) — FR-AUTH-003 berstatus Should Have di PRD, bukan Must Have; sengaja tidak dibangun di Fase 2 agar slice tetap fokus. Dipertimbangkan lagi bersama fitur Pusat Keamanan (Fase 7). |
 
 Endpoint OTP saat ini **belum terhubung provider pengiriman nyata** — kode dikirim ke log aplikasi saja (`ConsoleOtpProvider`, dev-only, lihat `backend/src/auth/otp/`). Siap diganti begitu Notification Worker (Fase 7) ada.
+
+**Konsumen nyata sejak Fase 6a:** `frontend/src/lib/auth.ts` (`register`/`verifyOtp`/`login`/`getMe`) + `LoginPage`/`RegisterPage`/`VerifyOtpPage` — kontrak di atas sekarang benar-benar dipakai UI, bukan hanya curl manual. `getMe` (`GET /users/me`) dipakai `AuthContext` untuk memvalidasi token tersimpan saat hidrasi sesi.
 
 ## Users
 | Method | Path | Fase | Status |

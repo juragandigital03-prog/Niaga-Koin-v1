@@ -2,7 +2,7 @@
 
 > Dokumen ini adalah ringkasan proyek yang dapat digunakan kembali di setiap fase, sesuai ATURAN EFISIENSI KREDIT AI pada MASTER_PROMPT. **Jangan membaca ulang seluruh PRD/SRS/SDD di fase berikutnya — baca dokumen ini dulu.**
 >
-> Terakhir diperbarui: 2026-09-22 (Fase 5b — Strategy Engine + Risk Engine, DONE)
+> Terakhir diperbarui: 2026-09-22 (Fase 6a — Frontend Foundation: API Client + Auth Flow, DONE)
 
 ---
 
@@ -94,6 +94,15 @@ Tidak ada mockup untuk: Registrasi/Login/OTP (F-AUTH-01), 2FA setup (F-AUTH-02, 
 - **Strategy Engine + Risk Engine (Fase 5b):** bot sekarang benar-benar **berdagang**. `POST /bots/{id}/evaluate` (dilindungi `JwtAuthGuard`, `400` jika bot bukan `active`) menjalankan satu siklus Strategy Engine → Risk Engine → `OrderService` (Fase 4b) secara sinkron. Strategy Engine (`StrategyEngineService` + `RsiStrategy`, `backend/src/strategy/`) menghitung RSI dari candle `MarketDataService`, memvalidasi semantik `parameters` sejak `BotsService.create` (FR-STRAT-002, rentang default PROPOSED — SRS menandainya `TBD`). Risk Engine (`RiskEngineService`, `backend/src/risk/`) memvalidasi sinyal terhadap `riskLimits.maxPositionUsdt` (FR-RISK-001) — sinyal yang ditolak **tidak pernah** mencapai `OrderService`, dicatat lewat structured log. FR-RISK-002 (circuit breaker) tetap **DITUNDA**. Trigger masih **manual saja** — evaluasi otomatis berkala belum dibangun (TODO fase mendatang). Diuji lewat fake market-data provider (deterministik) + **dibuktikan lewat smoke test manual terhadap server nyata**, termasuk membuktikan fail-safe `MARKET_DATA_UNAVAILABLE` saat Binance sungguhan tak terjangkau di sandbox ini.
 - Model database: `User` (+role, lockout), `OtpChallenge`, `ExchangeAccount`, `ApiCredential`, `Balance`, `Position`, `Order`, `Trade`, `Bot`.
 
+## 4a. Status Frontend
+
+**Fase 1 (replika visual statis) dan Fase 6a (fondasi API client + alur auth) selesai.** Frontend React + Vite + Tailwind:
+- **Fase 1:** `DashboardPage` mereplikasi `docs/design/stitch-export/dashboard_paper_trading_mobile` pixel-faithful dengan token desain asli, **masih data mock** (belum terhubung backend).
+- **Fase 6a:** `frontend/src/lib/api.ts` (fetch wrapper tipis, `ApiError`) + `frontend/src/lib/auth.ts` (request functions sesuai `API_CONTRACT.md`) + `AuthContext` (sesi via `localStorage`, hidrasi tervalidasi lewat `GET /users/me`) + routing (`react-router-dom`, dependency pertama di luar React/Vite/Tailwind) + `ProtectedRoute`. Halaman baru **tanpa mockup Stitch** (F-AUTH-01 tidak punya desain — lihat §3.3): `LoginPage`, `RegisterPage`, `VerifyOtpPage`, dibangun dengan token desain yang sama, bukan gaya baru. `AppHeader` kini punya aksi logout nyata.
+- **Dashboard (`DashboardPage`) tetap memakai `MOCK_BOTS`/saldo hardcoded** — menghubungkannya ke `GET /wallet`/`GET /bots` sungguhan adalah Fase 6b, belum dikerjakan.
+- **Dibuktikan lewat browser sungguhan** (Playwright/Chromium terhadap `vite dev` + backend nyata, bukan cuma unit test bermock): alur penuh register → baca OTP dari log backend nyata → verify → login → dashboard → sesi bertahan setelah hard reload → logout → redirect proteksi rute bekerja.
+- Model database frontend-side: token disimpan di `localStorage` (`gain_access_token`/`gain_refresh_token`), tidak pernah di cookie/sessionStorage — perilaku "logout di satu tab tidak otomatis logout tab lain" adalah trade-off yang diketahui, bukan bug, dan belum jadi prioritas untuk MVP.
+
 ## 5. Keputusan Arsitektur — DIKONFIRMASI (2026-09-21)
 
 Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh SDD v1.0). Ini **penyimpangan terdokumentasi dari SDD** (sesuai instruksi "Dokumentasikan setiap penyimpangan dari SDD"), dipilih untuk menghindari over-engineering di MVP:
@@ -127,14 +136,14 @@ Pengguna mengonfirmasi memakai stack sederhana yang diusulkan (bukan stack penuh
 **Bisa dijalankan penuh secara lokal** — lihat `README.md` untuk instruksi lengkap. Ringkasan:
 1. `docker compose up -d` (PostgreSQL).
 2. `cd backend && npm install && cp ../.env.example .env && npx prisma migrate deploy && npm run start:dev` → `http://localhost:3000/api/v1/health`.
-3. `cd frontend && npm install && npm run dev` → `http://localhost:5173` (dashboard replika desain, data mock).
-4. Alur auth nyata bisa dicoba lewat curl: `POST /api/v1/auth/register` → baca kode OTP dari log terminal backend → `POST /api/v1/auth/verify-otp` (header `Authorization: Bearer <registrationToken>`) → `POST /api/v1/auth/login` → `GET /api/v1/users/me` (header `Authorization: Bearer <accessToken>`). Detail lengkap di `API_CONTRACT.md`.
+3. `cd frontend && npm install && cp .env.example .env && npm run dev` → `http://localhost:5173` — redirect otomatis ke `/login`. Alur register → verify-otp (baca kode dari terminal backend) → login → dashboard (masih data mock, Fase 6b) → logout, semua bisa dicoba nyata di browser sejak Fase 6a.
+4. Alur auth nyata juga bisa dicoba lewat curl (tanpa UI): `POST /api/v1/auth/register` → baca kode OTP dari log terminal backend → `POST /api/v1/auth/verify-otp` (header `Authorization: Bearer <registrationToken>`) → `POST /api/v1/auth/login` → `GET /api/v1/users/me` (header `Authorization: Bearer <accessToken>`). Detail lengkap di `API_CONTRACT.md`.
 5. Market data: `curl http://localhost:3000/api/v1/market-data/ticker/BTCUSDT`. **Penting:** di mesin pengguna (bukan sandbox ini) ini akan benar-benar memanggil Binance — pastikan koneksi internet aktif; jika belum pernah dicoba, verifikasi dulu dengan `curl https://api.binance.com/api/v3/ping` di luar aplikasi.
 6. Koneksi exchange: `POST /api/v1/exchange-accounts` (header `Authorization: Bearer <accessToken>`, body `{exchangeName:"binance", apiKey, apiSecret}`) — sama seperti market data, ini benar-benar memanggil Binance di mesin pengguna.
 7. Paper trading: `GET /api/v1/wallet` (saldo virtual dibuat otomatis, tidak butuh koneksi exchange) → `POST /api/v1/orders` (body `{symbol:"BTCUSDT", side:"buy", quantity:0.01}`) → `GET /api/v1/orders`. Butuh Binance benar-benar terjangkau agar order bisa `filled` (bukan `rejected` dengan alasan `MARKET_DATA_UNAVAILABLE`).
 8. Bot: `POST /api/v1/bots` (body `{name, symbol:"BTCUSDT", strategyType:"rsi", parameters:{period:14,oversold:30,overbought:70}, riskLimits:{maxPositionUsdt:500}}`) → `PATCH /api/v1/bots/{id}/start` → `POST /api/v1/bots/{id}/evaluate` — menjalankan satu siklus Strategy Engine → Risk Engine → paper order. Butuh Binance benar-benar terjangkau agar candle nyata terambil (kalau tidak, hasilnya `blockedReason: "MARKET_DATA_UNAVAILABLE"`, bukan error — fail-safe by design).
 
-Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test (116), e2e test (36, melawan PostgreSQL nyata), production build, boot smoke test, screenshot visual dashboard (Fase 1), alur auth/market-data/exchange/paper-trading/bot/evaluate penuh via curl manual — termasuk pembuktian nyata jalur fail-safe (kill switch live trading, 503 saat exchange tak terjangkau, order ditolak aman tanpa menyentuh saldo, disconnect exchange otomatis menghentikan bot terkait, evaluate mengembalikan `MARKET_DATA_UNAVAILABLE` bukan data karangan saat Binance tak terjangkau) — lihat `CHANGELOG.md` untuk rincian per fase.
+Diverifikasi end-to-end pada sesi ini: lint, typecheck, unit test backend (116) + frontend (30), e2e test backend (36, melawan PostgreSQL nyata), production build backend + frontend, boot smoke test, screenshot visual dashboard (Fase 1), alur auth/market-data/exchange/paper-trading/bot/evaluate penuh via curl manual — termasuk pembuktian nyata jalur fail-safe (kill switch live trading, 503 saat exchange tak terjangkau, order ditolak aman tanpa menyentuh saldo, disconnect exchange otomatis menghentikan bot terkait, evaluate mengembalikan `MARKET_DATA_UNAVAILABLE` bukan data karangan saat Binance tak terjangkau) — dan sejak Fase 6a, alur auth frontend penuh (register→verify-otp→login→dashboard→reload→logout) diverifikasi lewat browser sungguhan (Playwright), bukan cuma test bermock — lihat `CHANGELOG.md` untuk rincian per fase.
 
 ## 8. Dokumen Terkait
 

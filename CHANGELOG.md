@@ -2,6 +2,27 @@
 
 Format: setiap entri merepresentasikan satu fase kerja (bukan setiap commit kecil).
 
+## [Fase 6a] Frontend Foundation: API Client + Auth Flow — 2026-09-22
+### Ditambahkan
+- `frontend/src/lib/api.ts` — fetch wrapper tipis (`apiFetch`), `ApiError` (status + message, menggabungkan array pesan validasi class-validator jadi satu string kalau perlu), token akses disimpan di modul-level variable (`setAccessToken`) bukan React state, supaya setiap pemanggilan `apiFetch` di mana pun konsisten melihat token yang sama.
+- `frontend/src/lib/auth.ts` — `register`/`verifyOtp`/`login`/`getMe`, mengikuti kontrak persis `API_CONTRACT.md` (tidak menambah field yang tidak ada di respons backend nyata).
+- `frontend/src/lib/AuthContext.tsx` — sesi disimpan di `localStorage` (`gain_access_token`/`gain_refresh_token`), hidrasi saat mount memvalidasi token tersimpan lewat `GET /users/me` (token kedaluwarsa/invalid dihapus diam-diam, bukan macet di state "authenticated" palsu).
+- Routing (`react-router-dom`, dependency baru pertama di luar React/Vite/Tailwind sejak Fase 1): `/login`, `/register`, `/verify-otp` publik; `/` (Dashboard) di belakang `ProtectedRoute`.
+- Halaman baru `LoginPage`, `RegisterPage`, `VerifyOtpPage` — memakai token desain yang sama (`tailwind.config.js`), karena **tidak ada mockup Stitch untuk layar ini** (F-AUTH-01 tidak punya desain resmi, lihat `PROJECT_STATUS.md` §3.3). `VerifyOtpPage` secara eksplisit memberi tahu pengguna bahwa OTP dev-only dicatat di log backend, bukan email sungguhan.
+- `AppHeader` — tombol avatar sekarang memicu `logout()` nyata.
+- `frontend/.env.example` (`VITE_API_BASE_URL`, default `http://localhost:3000/api/v1`), `frontend/src/vite-env.d.ts` (referensi tipe `vite/client` — sebelumnya tidak ada sama sekali, jadi `import.meta.env` belum bertipe).
+
+### Keputusan Desain Penting
+- **Dipecah dari Fase 6 gabungan** — frontend Fase 1 tidak punya infrastruktur sama sekali (tanpa router, API client, atau auth), jadi menghubungkan layar dashboard ke API nyata (rencana Fase 6 semula) butuh fondasi ini lebih dulu. Pola pemecahan sama seperti Fase 4a/4b dan 5a/5b.
+- **Dashboard belum diubah** — `MOCK_BOTS`/saldo hardcoded di `DashboardPage` sengaja tetap dipertahankan; menggantinya dengan data live (`GET /wallet`, `GET /bots`) adalah Fase 6b, agar patch tetap kecil dan reviewable.
+- **Tidak pakai data-fetching library** (react-query/swr) — cakupan sejauh ini (beberapa panggilan API sederhana) belum butuh cache/refetch/invalidation kompleks; `fetch` + wrapper tipis lebih sederhana, konsisten dengan prinsip "jangan bangun sebelum dibutuhkan".
+- **`registrationToken` tidak pernah dipersist** — hanya diteruskan lewat React Router state dari `RegisterPage` ke `VerifyOtpPage`; refresh/kunjungan langsung ke `/verify-otp` redirect ke `/register` (token backend memang berumur pendek, ~5 menit, jadi menyimpannya di `localStorage` tidak ada gunanya dan cuma menambah permukaan risiko).
+
+### Pengujian (hasil pada sesi ini)
+- `npx tsc --noEmit` PASS, `npx eslint` PASS (0 error, 1 warning pre-existing-style `react-refresh/only-export-components` di `AuthContext.tsx` — pola umum untuk file context yang mengekspor Provider + hook sekaligus), `npx vitest run` PASS (30/30 test, 21 baru: `api.ts` 7, `AuthContext` 5, `ProtectedRoute` 2, `LoginPage` 2, `RegisterPage` 2, `VerifyOtpPage` 3), `npm run build` (tsc + vite build) PASS.
+- **Smoke test manual lewat browser sungguhan** (Playwright/Chromium terhadap `vite dev` + backend nyata — bukan cuma unit test bermock, sesuai instruksi "start dev server dan uji fitur di browser"): alur penuh register → baca kode OTP dari log backend nyata → verify-otp → login → dashboard render → sesi bertahan setelah hard reload → logout → redirect ke `/login` → akses `/` setelah logout otomatis redirect lagi. Juga diverifikasi: pesan error asli backend ("Email atau password salah") tampil di UI untuk login gagal.
+- **Catatan lingkungan (bukan bug produksi):** font Material Symbols tidak bisa dimuat di sandbox ini (egress dibatasi — isu yang sama dengan screenshot smoke test Fase 1), sehingga ikon tampil sebagai teks literal dan sempat menutupi tombol avatar secara visual saat smoke test, menyebabkan Playwright gagal hit-test klik normal pada tombol logout. Diatasi di skrip smoke test dengan memanggil `.click()` langsung pada elemen DOM (bukan simulasi klik berbasis koordinat) — bukan perubahan kode aplikasi; font akan dimuat normal di browser pengguna sungguhan dengan akses internet biasa.
+
 ## [Fase 5b] Strategy Engine + Risk Engine — 2026-09-22
 ### Ditambahkan
 - `StrategyEngineService` + `RsiStrategy` (`backend/src/strategy/`) — Strategy Engine berbasis plugin (SDD §5.3, Prinsip 9 "extensibility"; hanya satu plugin ada: RSI). Menghitung RSI dari `MarketDataService.getCandles` (metode rata-rata sederhana atas `period+1` close terakhir — simplifikasi terdokumentasi, bukan Wilder smoothing rekursif penuh, sama semangatnya dengan model slippage paper trading di Fase 4b). Sinyal: `rsi < oversold` → `buy`; `rsi > overbought` → `sell`; selain itu `hold`.

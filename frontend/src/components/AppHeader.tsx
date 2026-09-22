@@ -1,6 +1,12 @@
+import { useAuth } from '../lib/AuthContext';
+
 // Faithful replica of the Stitch mockup header
-// (docs/design/stitch-export/dashboard_paper_trading_mobile/code.html:4).
+// (docs/design/stitch-export/dashboard_paper_trading_mobile/code.html:4),
+// plus a logout action on the avatar (no mockup covers session controls —
+// see PROJECT_STATUS.md 3.3).
 export function AppHeader() {
+  const { logout } = useAuth();
+
   return (
     <header className="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]">
       <div className="h-16 px-margin-mobile flex items-center justify-between gap-space-xs">
@@ -34,9 +40,14 @@ export function AppHeader() {
             <span className="material-symbols-outlined text-[20px]">notifications</span>
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface" />
           </button>
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm">
+          <button
+            type="button"
+            onClick={logout}
+            aria-label="Keluar"
+            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-sm hover:brightness-110 active:scale-95 transition-all"
+          >
             <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
-          </div>
+          </button>
         </div>
       </div>
     </header>
