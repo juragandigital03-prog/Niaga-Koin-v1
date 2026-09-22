@@ -1,65 +1,33 @@
-import type { Bot } from '../lib/types';
+import type { Bot, BotStatus } from '../lib/types';
 
-const formatSigned = (value: number, digits = 2) =>
-  `${value >= 0 ? '+' : ''}${value.toFixed(digits)}`;
+const STATUS_STYLE: Record<BotStatus, { label: string; dot: string; badgeBg: string; text: string }> = {
+  active: { label: 'ACTIVE', dot: 'bg-primary', badgeBg: 'bg-primary/10', text: 'text-primary' },
+  paused: { label: 'PAUSED', dot: 'bg-error', badgeBg: 'bg-surface-container-highest', text: 'text-error' },
+  stopped: {
+    label: 'STOPPED',
+    dot: 'bg-on-surface-variant',
+    badgeBg: 'bg-surface-container-highest',
+    text: 'text-on-surface-variant',
+  },
+};
 
-function BotCard({ bot }: { bot: Bot }) {
-  if (bot.status === 'paused') {
-    return (
-      <div className="rounded-xl bg-surface-container p-space-md flex flex-col gap-2.5 opacity-90">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-surface-variant text-[24px]">
-                speed
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-headline-md text-headline-md text-on-surface leading-tight">
-                {bot.name}
-              </span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
-                {bot.strategyLabel}
-              </span>
-            </div>
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container-highest">
-            <span className="w-2 h-2 rounded-full bg-error" />
-            <span className="font-ticker-sm text-ticker-sm text-error font-bold">PAUSED</span>
-          </div>
-        </div>
-        {bot.alert && (
-          <div className="bg-surface-container-low px-3 py-2 rounded-lg flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="material-symbols-outlined text-error text-[18px] flex-shrink-0">
-                shield
-              </span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant truncate">
-                {bot.alert}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="font-label-caps text-label-caps text-secondary font-semibold hover:underline flex-shrink-0"
-            >
-              RESUME
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
+interface BotCardProps {
+  bot: Bot;
+  pending: boolean;
+  onStart: (id: string) => void;
+  onPause: (id: string) => void;
+  onStop: (id: string) => void;
+}
 
-  const winRate = bot.totalTrades > 0 ? (bot.winTrades / bot.totalTrades) * 100 : 0;
+function BotCard({ bot, pending, onStart, onPause, onStop }: BotCardProps) {
+  const style = STATUS_STYLE[bot.status];
 
   return (
     <div className="rounded-xl bg-surface-container p-space-md flex flex-col gap-3 transition-transform active:scale-[0.99]">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
-            <span className="material-symbols-outlined text-secondary text-[24px]">
-              smart_toy
-            </span>
+            <span className="material-symbols-outlined text-secondary text-[24px]">smart_toy</span>
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
@@ -67,94 +35,110 @@ function BotCard({ bot }: { bot: Bot }) {
                 {bot.name}
               </span>
               <span className="font-label-caps text-label-caps bg-surface-container-high px-1.5 py-0.5 rounded text-secondary-fixed-dim">
-                {bot.exchange.toUpperCase()}
+                {bot.symbol}
               </span>
             </div>
-            <span className="font-body-sm text-body-sm text-on-surface-variant">
-              {bot.strategyLabel}
+            <span className="font-body-sm text-body-sm text-on-surface-variant uppercase">
+              {bot.strategyType}
             </span>
           </div>
         </div>
-        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10">
+        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${style.badgeBg}`}>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            {bot.status === 'active' && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+            )}
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${style.dot}`} />
           </span>
-          <span className="font-ticker-sm text-ticker-sm text-primary font-bold">RUNNING</span>
+          <span className={`font-ticker-sm text-ticker-sm font-bold ${style.text}`}>{style.label}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 bg-surface-container-low p-2.5 rounded-lg">
-        <div className="flex flex-col">
-          <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-            PnL 24 Jam
-          </span>
-          <span className="font-ticker-md text-ticker-md text-primary font-bold mt-0.5">
-            {formatSigned(bot.pnl24hUsdt)} USDT ({formatSigned(bot.pnl24hPercent)}%)
-          </span>
-        </div>
-        <div className="flex flex-col">
-          <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-            Win Rate / Trades
-          </span>
-          <span className="font-ticker-md text-ticker-md text-on-surface font-semibold mt-0.5">
-            {bot.winTrades}/{bot.totalTrades} Win ({winRate.toFixed(1)}%)
-          </span>
-        </div>
-      </div>
+      {/* No fabricated PnL/win-rate — the backend doesn't compute bot
+          analytics yet (F-AN-01 is TODO), so we say so instead of
+          inventing numbers. */}
+      <p className="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-low rounded-lg px-3 py-2">
+        Analitik performa (PnL, win rate) belum tersedia untuk bot ini.
+      </p>
 
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-1 text-on-surface-variant font-ticker-sm text-ticker-sm">
-          <span className="material-symbols-outlined text-[16px]">timer</span>
-          <span>{bot.note}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-end gap-1.5 pt-1">
+        {bot.status !== 'active' && (
           <button
-            aria-label="Jeda Bot"
             type="button"
-            className="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+            disabled={pending}
+            onClick={() => onStart(bot.id)}
+            aria-label="Jalankan Bot"
+            className="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-primary transition-colors disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[18px]">play_arrow</span>
+          </button>
+        )}
+        {bot.status === 'active' && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => onPause(bot.id)}
+            aria-label="Jeda Bot"
+            className="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-[18px]">pause</span>
           </button>
+        )}
+        {bot.status !== 'stopped' && (
           <button
-            aria-label="Pengaturan Bot"
             type="button"
-            className="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+            disabled={pending}
+            onClick={() => onStop(bot.id)}
+            aria-label="Hentikan Bot"
+            className="w-9 h-9 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-error transition-colors disabled:opacity-50"
           >
-            <span className="material-symbols-outlined text-[18px]">settings</span>
+            <span className="material-symbols-outlined text-[18px]">stop</span>
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-export function BotList({ bots }: { bots: Bot[] }) {
-  const running = bots.filter((b) => b.status === 'running').length;
+export interface BotListProps {
+  bots: Bot[];
+  pendingId?: string | null;
+  onStart: (id: string) => void;
+  onPause: (id: string) => void;
+  onStop: (id: string) => void;
+}
+
+export function BotList({ bots, pendingId = null, onStart, onPause, onStop }: BotListProps) {
+  const active = bots.filter((b) => b.status === 'active').length;
   const paused = bots.filter((b) => b.status === 'paused').length;
 
   return (
     <section className="flex flex-col gap-space-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="font-headline-md text-headline-md text-on-surface">Bot Aktif</span>
-          <span className="font-ticker-sm text-ticker-sm px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-semibold">
-            {running} Running · {paused} Paused
-          </span>
+      <div className="flex items-center gap-2">
+        <span className="font-headline-md text-headline-md text-on-surface">Bot Saya</span>
+        <span className="font-ticker-sm text-ticker-sm px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-semibold">
+          {active} Active · {paused} Paused
+        </span>
+      </div>
+
+      {bots.length === 0 ? (
+        <p className="font-body-sm text-body-sm text-on-surface-variant text-center py-space-md">
+          Belum ada bot. Buat bot baru untuk mulai paper trading otomatis.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {bots.map((bot) => (
+            <BotCard
+              key={bot.id}
+              bot={bot}
+              pending={pendingId === bot.id}
+              onStart={onStart}
+              onPause={onPause}
+              onStop={onStop}
+            />
+          ))}
         </div>
-        <a
-          className="font-body-sm text-body-sm text-secondary hover:underline flex items-center gap-0.5"
-          href="#"
-        >
-          Lihat Semua
-          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-        </a>
-      </div>
-      <div className="flex flex-col gap-2.5">
-        {bots.map((bot) => (
-          <BotCard key={bot.id} bot={bot} />
-        ))}
-      </div>
+      )}
     </section>
   );
 }

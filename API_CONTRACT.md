@@ -1,6 +1,6 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), Fase 4b (Paper Trading Core), Fase 5a (Bot Lifecycle), Fase 5b (Strategy Engine + Risk Engine), dan Fase 6a (Frontend Foundation: API Client + Auth Flow) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
+> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), Fase 4b (Paper Trading Core), Fase 5a (Bot Lifecycle), Fase 5b (Strategy Engine + Risk Engine), Fase 6a (Frontend Foundation: API Client + Auth Flow), dan Fase 6b (Dashboard: hubungkan ke API nyata) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
@@ -50,6 +50,8 @@ Kredensial disimpan terenkripsi AES-256-GCM (`CredentialsEncryptionService`, `ba
 
 Model eksekusi: harga dari `MarketDataService` (Fase 3) + slippage searah order (`PAPER_TRADING_SLIPPAGE_PERCENT`, default 0.05%, deterministik — bukan simulasi depth order book) + fee (`PAPER_TRADING_FEE_PERCENT`, default 0.1%). Quantity dibulatkan ke bawah sesuai `PAPER_TRADING_QUANTITY_PRECISION` (default 6 desimal, satu aturan generik untuk semua simbol — bukan LOT_SIZE per-simbol asli Binance, itu TBD). Debit saldo/posisi memakai UPDATE bersyarat (`WHERE amount >= totalCost`) di dalam transaksi database, bukan read-lalu-write terpisah — dua order bersamaan pada wallet yang sama tidak bisa berdua lolos melebihi saldo yang benar-benar tersedia. Tidak ada short selling (SELL divalidasi terhadap quantity posisi yang benar-benar dimiliki).
 
+**Konsumen nyata sejak Fase 6b:** `frontend/src/lib/wallet.ts` (`getWallet`/`resetWallet`) + `frontend/src/lib/orders.ts` (`listOrders`) dipakai `DashboardPage` — `BalanceCard` menampilkan `balanceUsdt` nyata dan jumlah order `status:"filled"` yang dihitung dari `GET /orders` (bukan angka hardcode). **Tidak ada endpoint `/api/v1/portfolio` terpisah** — F-PORT-01 diputuskan cukup memakai `GET /wallet` yang sudah ada selama cuma satu sumber data (paper wallet); lihat `IMPLEMENTATION_PLAN.md` Fase 6b.
+
 ## Bots
 | Method | Path | Fase | Status |
 |---|---|---|---|
@@ -68,11 +70,13 @@ Model eksekusi: harga dari `MarketDataService` (Fase 3) + slippage searah order 
 
 **Trigger:** hanya manual (`POST /bots/{id}/evaluate`) di fase ini. Evaluasi otomatis berkala (bot "berjalan sendiri" tanpa dipanggil manual) **belum dibangun** — dipertimbangkan sebagai tambahan ringan (`@nestjs/schedule` in-process) di fase mendatang jika diperlukan, bukan komitmen Fase 5b.
 
+**Konsumen nyata sejak Fase 6b:** `frontend/src/lib/bots.ts` (`listBots`/`startBot`/`pauseBot`/`stopBot`) dipakai `DashboardPage` — daftar bot + tombol start/pause/stop di `BotList` benar-benar memanggil endpoint di atas. `POST /bots` (wizard buat bot) dan `POST /bots/{id}/evaluate` **belum ada UI-nya** — itu Fase 6c/mendatang.
+
 ## Portfolio & Orders
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| GET | `/portfolio` | 6 | TODO — akan mengagregasi `/wallet` (Fase 4b) lintas exchange/bot; belum dibangun karena belum ada lebih dari satu sumber untuk diagregasi |
-| GET | `/reports/pnl?botId=&period=` | 6 | TODO |
+| GET | `/portfolio` | 6c | TODO — **diputuskan Fase 6b: tidak dibangun untuk sekarang.** Akan mengagregasi `/wallet` (Fase 4b) lintas exchange/bot, tapi belum ada lebih dari satu sumber data untuk diagregasi (paper wallet saja) — `GET /wallet` yang sudah ada sudah cukup, lihat `IMPLEMENTATION_PLAN.md` Fase 6b. Dipertimbangkan lagi begitu ada exchange live terhubung. |
+| GET | `/reports/pnl?botId=&period=` | 7 | TODO — F-AN-01, belum dibangun. |
 
 ## Admin
 | Method | Path | Fase | Status |

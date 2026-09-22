@@ -2,6 +2,27 @@
 
 Format: setiap entri merepresentasikan satu fase kerja (bukan setiap commit kecil).
 
+## [Fase 6b] Dashboard: hubungkan ke API nyata — 2026-09-22
+### Ditambahkan
+- `frontend/src/lib/wallet.ts` (`getWallet`/`resetWallet`), `frontend/src/lib/bots.ts` (`listBots`/`startBot`/`pauseBot`/`stopBot`), `frontend/src/lib/orders.ts` (`listOrders`) — semuanya tipis di atas `apiFetch` (Fase 6a), mengikuti kontrak persis `API_CONTRACT.md`.
+- `DashboardPage` sekarang fetch ketiganya lewat `Promise.all` saat mount, dengan loading state ("Memuat data dashboard...") dan error state (banner `role="alert"`, pesan asli dari backend).
+- `BotList`/`BotCard` ditulis ulang total: badge status tiga-state (`ACTIVE`/`PAUSED`/`STOPPED`), tombol start/pause/stop yang benar-benar memanggil `PATCH /bots/{id}/...` dengan state per-bot pending saat aksi berlangsung (tombol disabled sampai respons datang).
+
+### Diubah
+- `MOCK_BOTS` dan saldo hardcode Fase 1 di `DashboardPage` **dihapus total** (bukan disembunyikan di belakang flag).
+- `lib/types.ts`: `Bot`/`BotStatus` diselaraskan penuh dengan kontrak backend nyata (`{id, name, symbol, strategyType, status: 'active'|'paused'|'stopped', createdAt}`). Field rekaan Fase 1 (`exchange`, `strategyLabel`, `pnl24hUsdt`, `pnl24hPercent`, `winTrades`, `totalTrades`, `note`, `alert`) dihapus — backend tidak pernah mengembalikannya.
+- `BalanceCard`: prop `pnl24hUsdt`/`pnl24hPercent` → `pnlUsdt`/`pnlPercent`, `ordersSucceeded24h` → `ordersFilledTotal`; label "24j" diganti "Sejak Reset".
+
+### Keputusan Desain Penting
+- **Fase 6 dipecah lebih lanjut** — menghubungkan tiga layar (`dashboard_paper_trading_mobile`, `portfolio_alokasi_saldo_scr_06`, `detail_bot_analitik_performa`) sekaligus terlalu besar untuk satu patch; dua yang terakhir bahkan belum punya halaman sama sekali. Fase 6b hanya menghubungkan Dashboard yang sudah ada; Portofolio + Detail Bot jadi Fase 6c.
+- **Tidak ada angka finansial rekaan.** Backend tidak menghitung PnL/win-rate per bot (F-AN-01 masih TODO) dan tidak melacak snapshot saldo historis/harian, jadi UI tidak bisa jujur menampilkan "PnL 24 Jam" atau win-rate — diganti catatan "Analitik performa belum tersedia" di kartu bot, dan label "Sejak Reset" (bukan "24 jam") untuk PnL saldo, dihitung sebagai `saldo saat ini - saldo default` (satu-satunya PnL yang bisa dihitung tanpa mengarang data). Ini menegakkan langsung larangan eksplisit master prompt: "Jangan menampilkan angka finansial seolah-olah nyata jika berasal dari simulasi".
+- **`/api/v1/portfolio` (F-PORT-01) diputuskan tidak dibangun untuk sekarang** — hanya ada satu sumber data (paper wallet), jadi endpoint agregasi baru di atas `GET /wallet` yang sudah ada tidak memberi nilai tambah nyata. Didokumentasikan sebagai keputusan sadar di `IMPLEMENTATION_PLAN.md`/`API_CONTRACT.md`, bukan dilewati diam-diam.
+- **"Order Berhasil" dihitung client-side dari `GET /orders`** (`status === 'filled'`), bukan field agregat dari backend (backend belum punya filter tanggal/status di endpoint itu, lihat catatan TODO di `API_CONTRACT.md`) — cukup untuk kebutuhan tampilan saat ini tanpa perlu endpoint baru.
+
+### Pengujian (hasil pada sesi ini)
+- `npx tsc --noEmit` PASS, `npx eslint` PASS (0 error, 1 warning pre-existing-style di `AuthContext.tsx`), `npx vitest run` PASS (39/39 test — `BalanceCard` 5, `BotList` 6 ditulis ulang total, `DashboardPage` 5 baru: loading, data nyata bukan mock, error banner, reset saldo, aksi pause bot), `npm run build` PASS.
+- **Smoke test manual lewat browser sungguhan** (Playwright/Chromium terhadap `vite dev` + backend nyata): register→login→dashboard menampilkan saldo default nyata (10,000.00, bukan mock 10,412.50 Fase 1) dan state kosong "Belum ada bot" yang jujur → bot dibuat lewat API (belum ada wizard UI) → reload menampilkan bot nyata dengan badge STOPPED, tanpa teks PnL rekaan apa pun → klik "Jalankan Bot" di UI memanggil `PATCH .../start` sungguhan dan badge berubah ke ACTIVE → klik "Jeda Bot" memanggil `PATCH .../pause` dan badge berubah ke PAUSED → klik Reset Saldo lewat modal memanggil `POST /wallet/reset` sungguhan dan dialog tertutup. Screenshot akhir memverifikasi tampilan visual sesuai desain token.
+
 ## [Fase 6a] Frontend Foundation: API Client + Auth Flow — 2026-09-22
 ### Ditambahkan
 - `frontend/src/lib/api.ts` — fetch wrapper tipis (`apiFetch`), `ApiError` (status + message, menggabungkan array pesan validasi class-validator jadi satu string kalau perlu), token akses disimpan di modul-level variable (`setAccessToken`) bukan React state, supaya setiap pemanggilan `apiFetch` di mana pun konsisten melihat token yang sama.

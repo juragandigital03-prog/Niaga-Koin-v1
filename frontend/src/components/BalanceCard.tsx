@@ -2,9 +2,9 @@ import { useState } from 'react';
 
 export interface BalanceCardProps {
   balanceUsdt: number;
-  pnl24hUsdt: number;
-  pnl24hPercent: number;
-  ordersSucceeded24h: number;
+  pnlUsdt: number;
+  pnlPercent: number;
+  ordersFilledTotal: number;
   onResetBalance: () => void;
   onCreateBot: () => void;
   onViewHistory: () => void;
@@ -18,18 +18,23 @@ const formatUsdt = (value: number) =>
  * "Total Estimasi Saldo Virtual" label and lack of any real-money framing
  * are load-bearing, not cosmetic (master prompt: "Jangan menampilkan angka
  * finansial seolah-olah nyata jika berasal dari simulasi").
+ *
+ * `pnlUsdt`/`pnlPercent` are PnL *since the last balance reset*, not a
+ * rolling 24-hour window — the backend doesn't track historical/daily
+ * balance snapshots yet (F-AN-01 is still TODO), so a "24h" figure would
+ * be fabricated. See DashboardPage for how this is derived.
  */
 export function BalanceCard({
   balanceUsdt,
-  pnl24hUsdt,
-  pnl24hPercent,
-  ordersSucceeded24h,
+  pnlUsdt,
+  pnlPercent,
+  ordersFilledTotal,
   onResetBalance,
   onCreateBot,
   onViewHistory,
 }: BalanceCardProps) {
   const [hidden, setHidden] = useState(false);
-  const pnlPositive = pnl24hUsdt >= 0;
+  const pnlPositive = pnlUsdt >= 0;
 
   return (
     <section className="rounded-xl bg-surface-container-low p-space-md relative overflow-hidden shadow-lg flex flex-col gap-space-md">
@@ -74,11 +79,11 @@ export function BalanceCard({
           className={`font-ticker-sm text-ticker-sm font-bold ${pnlPositive ? 'text-primary' : 'text-error'}`}
         >
           {pnlPositive ? '+' : ''}
-          {formatUsdt(pnl24hUsdt)} USDT ({pnlPositive ? '+' : ''}
-          {pnl24hPercent.toFixed(2)}% 24j)
+          {formatUsdt(pnlUsdt)} USDT ({pnlPositive ? '+' : ''}
+          {pnlPercent.toFixed(2)}% Sejak Reset)
         </span>
         <span className="font-body-sm text-body-sm text-on-surface-variant">
-          · {ordersSucceeded24h} Order Berhasil
+          · {ordersFilledTotal} Order Berhasil
         </span>
       </div>
 

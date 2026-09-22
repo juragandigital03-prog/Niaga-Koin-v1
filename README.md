@@ -187,7 +187,7 @@ cd frontend
 npm run dev
 ```
 
-Frontend berjalan di `http://localhost:5173` (butuh backend berjalan di `http://localhost:3000`, lihat bagian sebelumnya). Kunjungan pertama otomatis redirect ke `/login` — daftar lewat `/register` (kode OTP muncul di log terminal **backend**, bukan email sungguhan — dev-only, lihat bagian "Mencoba Alur Autentikasi" di atas), verifikasi di `/verify-otp`, lalu masuk. Setelah login, Dashboard tampil — **masih menampilkan data contoh (mock)**, belum terhubung ke `GET /wallet`/`GET /bots` sungguhan (itu Fase 6b, lihat `IMPLEMENTATION_PLAN.md`). Tombol avatar di header untuk logout.
+Frontend berjalan di `http://localhost:5173` (butuh backend berjalan di `http://localhost:3000`, lihat bagian sebelumnya). Kunjungan pertama otomatis redirect ke `/login` — daftar lewat `/register` (kode OTP muncul di log terminal **backend**, bukan email sungguhan — dev-only, lihat bagian "Mencoba Alur Autentikasi" di atas), verifikasi di `/verify-otp`, lalu masuk. Setelah login, Dashboard tampil dengan **saldo dan daftar bot nyata** dari backend Anda (bukan data contoh lagi sejak Fase 6b) — akun baru akan menampilkan saldo default 10,000.00 USDT dan "Belum ada bot" sampai Anda membuat satu lewat curl (lihat bagian "Mengelola & Menjalankan Bot" di atas — belum ada wizard buat-bot di UI). Tombol start/pause/stop di kartu bot dan tombol Reset Saldo semuanya memanggil API sungguhan. Tombol avatar di header untuk logout.
 
 ## Menjalankan Test
 
@@ -253,6 +253,8 @@ docker compose down -v
 | Frontend menampilkan "Failed to fetch" / network error saat login-register | Backend tidak berjalan, atau `VITE_API_BASE_URL` di `frontend/.env` tidak cocok dengan port backend | Pastikan `cd backend && npm run start:dev` aktif; cek `frontend/.env` |
 | Kode OTP tidak pernah sampai ke halaman `/verify-otp` | Wajar — OTP dev-only dicatat di **log terminal backend**, bukan dikirim ke email sungguhan (belum ada provider nyata, lihat Fase 7) | Cek terminal tempat `npm run start:dev` berjalan, cari baris `[DEV OTP ...] destination=... code=...` |
 | Refresh halaman `/verify-otp` redirect balik ke `/register` | Disengaja — `registrationToken` cuma ada di router state (tidak disimpan), dan token backend memang berumur pendek (~5 menit) | Daftar ulang untuk mendapat kode/token baru |
+| Dashboard menampilkan "Belum ada bot" padahal sudah ada bot | Bot dibuat lewat curl/user lain, atau belum di-refresh setelah membuat bot baru | Refresh halaman — belum ada auto-refresh/polling; bot juga difilter per pengguna yang login (lihat isolasi `userId` di `API_CONTRACT.md`) |
+| Tombol start/pause/stop di kartu bot tidak merespons | Backend sedang memproses (tombol disabled sementara saat aksi berlangsung) atau backend tidak terjangkau | Tunggu sebentar; kalau tetap tidak berubah, cek console browser dan pastikan backend berjalan |
 
 ## Struktur Proyek
 

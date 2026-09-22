@@ -1,19 +1,16 @@
-// Shared frontend types. Kept intentionally small in Fase 1 — extended as
-// each backend fase (Bot lifecycle, Portfolio, dst.) ships its contract.
-// See API_CONTRACT.md for the endpoints these will eventually come from.
+// Shared frontend types. Matches the real backend contract (see
+// API_CONTRACT.md "Bots") — no fabricated fields like PnL/win-rate that
+// the backend doesn't compute yet (F-AN-01 is still TODO). Fase 1's mock
+// data used a richer shape (exchange, strategyLabel, pnl24h...); that was
+// invented for the static replica and is not what `GET /bots` returns.
 
-export type BotStatus = 'running' | 'paused' | 'stopped';
+export type BotStatus = 'active' | 'paused' | 'stopped';
 
 export interface Bot {
   id: string;
   name: string;
-  exchange: string;
-  strategyLabel: string;
+  symbol: string;
+  strategyType: string;
   status: BotStatus;
-  pnl24hUsdt: number;
-  pnl24hPercent: number;
-  winTrades: number;
-  totalTrades: number;
-  note: string;
-  alert?: string;
+  createdAt: string;
 }

@@ -4,9 +4,9 @@ import { BalanceCard } from './BalanceCard';
 
 const baseProps = {
   balanceUsdt: 10412.5,
-  pnl24hUsdt: 412.5,
-  pnl24hPercent: 4.12,
-  ordersSucceeded24h: 22,
+  pnlUsdt: 412.5,
+  pnlPercent: 4.12,
+  ordersFilledTotal: 22,
   onResetBalance: vi.fn(),
   onCreateBot: vi.fn(),
   onViewHistory: vi.fn(),
@@ -33,9 +33,14 @@ describe('BalanceCard', () => {
     expect(onResetBalance).toHaveBeenCalledTimes(1);
   });
 
+  it('labels PnL as "since reset", not a fabricated 24h window', () => {
+    render(<BalanceCard {...baseProps} />);
+    expect(screen.getByText(/\+412\.50 USDT \(\+4\.12% Sejak Reset\)/)).toBeInTheDocument();
+  });
+
   it('renders negative PnL with the error color path, not the primary/positive one', () => {
-    render(<BalanceCard {...baseProps} pnl24hUsdt={-50} pnl24hPercent={-0.5} />);
-    const pnlText = screen.getByText(/-50\.00 USDT \(-0\.50% 24j\)/);
+    render(<BalanceCard {...baseProps} pnlUsdt={-50} pnlPercent={-0.5} />);
+    const pnlText = screen.getByText(/-50\.00 USDT \(-0\.50% Sejak Reset\)/);
     expect(pnlText.className).toContain('text-error');
   });
 });
