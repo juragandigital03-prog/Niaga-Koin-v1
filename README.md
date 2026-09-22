@@ -123,6 +123,35 @@ curl http://localhost:3000/api/v1/exchange-accounts -H "Authorization: Bearer <a
 curl -X DELETE http://localhost:3000/api/v1/exchange-accounts/<id> -H "Authorization: Bearer <accessToken>"  # putuskan koneksi
 ```
 
+## Mencoba Paper Trading (Fase 4b)
+
+Saldo virtual (10.000 USDT default) dibuat otomatis saat pertama diakses — **tidak perlu** menghubungkan akun exchange dulu.
+
+```bash
+# Lihat wallet (saldo + posisi)
+curl http://localhost:3000/api/v1/wallet -H "Authorization: Bearer <accessToken>"
+
+# Beli 0.01 BTC (market order — selalu 201, cek "status" di body: "filled" atau "rejected")
+curl -X POST http://localhost:3000/api/v1/orders \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"symbol":"BTCUSDT","side":"buy","quantity":0.01}'
+
+# Jual kembali
+curl -X POST http://localhost:3000/api/v1/orders \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"symbol":"BTCUSDT","side":"sell","quantity":0.01}'
+
+# Riwayat order
+curl http://localhost:3000/api/v1/orders -H "Authorization: Bearer <accessToken>"
+
+# Reset saldo ke default & hapus semua posisi (aksi ireversibel)
+curl -X POST http://localhost:3000/api/v1/wallet/reset -H "Authorization: Bearer <accessToken>"
+```
+
+Order butuh harga dari Binance (lewat Market Data, Fase 3) — kalau `status` yang kembali adalah `"rejected"` dengan `rejectReason: "MARKET_DATA_UNAVAILABLE"`, itu berarti backend tidak bisa menjangkau Binance saat itu (fail-safe yang disengaja, saldo Anda tidak tersentuh) — cek koneksi internet Anda.
+
 ## Menjalankan Frontend
 
 ```bash
@@ -180,6 +209,9 @@ docker compose down -v
 | Backend gagal start, error `Missing required environment variable: CREDENTIALS_ENCRYPTION_KEY` | `.env` dibuat sebelum Fase 4a | Salin ulang dari `.env.example` terbaru, atau tambahkan `CREDENTIALS_ENCRYPTION_KEY` manual |
 | `POST /exchange-accounts` mengembalikan `503` | Backend tidak bisa menjangkau Binance untuk memvalidasi API key | Sama seperti market data — cek `curl https://api.binance.com/api/v3/ping`; API key TIDAK disimpan sampai berhasil tervalidasi |
 | `POST /exchange-accounts` mengembalikan `422 INVALID_PERMISSION_SCOPE` | API key yang dipakai punya izin withdrawal aktif | Buat API key baru di Binance dengan izin **trade-only** saja (nonaktifkan izin withdrawal) |
+| `POST /orders` mengembalikan `201` tapi `status:"rejected", rejectReason:"MARKET_DATA_UNAVAILABLE"` | Backend tidak bisa menjangkau Binance untuk mengambil harga | Ini bukan bug — order memang selalu `201`, hasilnya ada di `status`/`rejectReason`. Cek koneksi internet, lalu coba lagi |
+| `POST /orders` mengembalikan `rejected, INSUFFICIENT_BALANCE` padahal saldo terlihat cukup | Fee + slippage membuat total biaya sedikit lebih tinggi dari notional murni | Perbesar sedikit saldo (via reset) atau kecilkan quantity — ini validasi yang benar, bukan bug |
+| `POST /orders` mengembalikan `400` | Symbol di luar whitelist, atau quantity ≤ 0 setelah dibulatkan ke `PAPER_TRADING_QUANTITY_PRECISION` | Cek `GET /market-data/symbols`, atau perbesar quantity |
 
 ## Struktur Proyek
 

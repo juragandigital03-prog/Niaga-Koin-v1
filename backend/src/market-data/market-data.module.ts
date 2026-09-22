@@ -12,5 +12,6 @@ import { BinanceMarketDataProvider } from './providers/binance-market-data.provi
     // exchange later without touching MarketDataService/Controller.
     { provide: MARKET_DATA_PROVIDER, useClass: BinanceMarketDataProvider },
   ],
+  exports: [MarketDataService],
 })
 export class MarketDataModule {}

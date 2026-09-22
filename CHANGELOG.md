@@ -2,6 +2,25 @@
 
 Format: setiap entri merepresentasikan satu fase kerja (bukan setiap commit kecil).
 
+## [Fase 4b] Paper Trading Core — 2026-09-22
+### Ditambahkan
+- Model Prisma `Balance`, `Position`, `Order`, `Trade` (migration `paper_trading_core`) — satu set tabel untuk paper maupun live (dibedakan `is_paper`, pola SDD §6.2), bukan tabel terpisah.
+- `WalletService` (`backend/src/paper-trading/`) — `getOrCreateBalance` (lazy init 10.000 USDT default), `getSummary`, `reset` (kembalikan saldo default + hapus posisi).
+- `OrderService` — simulator market order: fetch harga dari `MarketDataService` (reuse Fase 3), slippage deterministik searah order (`PAPER_TRADING_SLIPPAGE_PERCENT`, default 0.05%), fee (`PAPER_TRADING_FEE_PERCENT`, default 0.1%), pembulatan quantity ke bawah sesuai presisi yang dikonfigurasi. Weighted-average entry price dihitung ulang setiap BUY menambah posisi.
+- Endpoint baru: `GET /api/v1/wallet`, `POST /api/v1/wallet/reset`, `POST /api/v1/orders`, `GET /api/v1/orders?symbol=` — seluruhnya dilindungi `JwtAuthGuard`, difilter per `userId`.
+- Env baru: `PAPER_TRADING_SLIPPAGE_PERCENT` (mengganti `PAPER_TRADING_SLIPPAGE_MODEL=TBD` dengan nilai konkret terdokumentasi), `PAPER_TRADING_MIN_NOTIONAL_USDT`, `PAPER_TRADING_QUANTITY_PRECISION`.
+
+### Keputusan Desain Penting (didokumentasikan, termasuk penyimpangan dari SDD)
+- **Setiap percobaan order dicatat, termasuk yang ditolak** — `Order.status='rejected'` dengan `rejectReason` (`INSUFFICIENT_BALANCE`, `INSUFFICIENT_POSITION`, `BELOW_MIN_NOTIONAL`, `MARKET_DATA_UNAVAILABLE`), bukan sekadar respons error HTTP tanpa jejak. Endpoint `POST /orders` **selalu** mengembalikan `201` — hasil (`filled` vs `rejected`) ada di body, bukan di status code, mengikuti bagaimana exchange sungguhan mencatat percobaan order.
+- **Penyimpangan terdokumentasi dari ERD SDD §6.1:** `Balance`/`Position` diikat ke `userId`, bukan `exchangeAccountId` — karena SRS §3.8 eksplisit menyatakan paper trading tidak memerlukan API key untuk mulai. `botId` sengaja belum ada di `Order`/`Position` (nullable, ditambahkan saat Bot Lifecycle Fase 5 dibangun) — menghindari memodelkan relasi ke entitas yang belum ada.
+- **Konkurensi:** debit saldo/posisi memakai `updateMany` dengan kondisi (`WHERE amount/quantity >= jumlah`) di dalam transaksi interaktif Prisma — bukan baca-lalu-tulis. Dua order bersamaan pada wallet yang sama tidak bisa berdua lolos melebihi yang tersedia.
+- **Fail-safe untuk data pasar:** kegagalan `MarketDataService.getTicker()` (mis. exchange tak terjangkau) ditangkap dan dicatat sebagai order `rejected` — bukan 503 polos tanpa jejak, dan saldo/posisi dijamin tidak berubah.
+- Tidak ada short selling — SELL selalu divalidasi terhadap quantity posisi yang benar-benar dimiliki saat itu.
+
+### Pengujian (hasil pada sesi ini)
+- `npx tsc --noEmit` PASS, `npx eslint` PASS (0 error), `npx jest` PASS (75/75 unit test, +15 baru: WalletService 4, OrderService 11 — termasuk assersi numerik tangan atas slippage/fee/weighted-avg-entry-price), `npx jest --config test/jest-e2e.json` PASS (25/25 e2e test, +8 baru: wallet lazy-init, buy→sell round trip dengan assersi harga persis, saldo tak pernah negatif pada order yang jauh melebihi saldo, minimum notional, symbol tak didukung, reset, isolasi antar-user, wajib auth), `npx nest build` PASS.
+- Smoke test manual melawan server & PostgreSQL nyata (bukan mock): register→login→`GET /wallet` (10.000 USDT default, tanpa exchange account) → `POST /orders` → **`201` dengan `status:"rejected", rejectReason:"MARKET_DATA_UNAVAILABLE"`** (Binance tak terjangkau dari sandbox — perilaku fail-safe yang benar) → `GET /orders` menampilkan order yang ditolak → `GET /wallet` membuktikan saldo tetap `10000`, tidak tersentuh → `POST /wallet/reset` berhasil.
+
 ## [Fase 4a] Exchange Account Connection — 2026-09-22
 ### Ditambahkan
 - `CredentialsEncryptionService` (`backend/src/common/crypto/`) — AES-256-GCM, kunci dari `CREDENTIALS_ENCRYPTION_KEY` (hash SHA-256 dari passphrase apa pun → kunci 32-byte). Aplikasi menolak start tanpa variabel ini (diverifikasi manual: pesan error eksplisit, bukan crash tak jelas).

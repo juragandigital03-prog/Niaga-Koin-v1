@@ -1,6 +1,6 @@
 # API CONTRACT — GAIN (Niaga Koin)
 
-> **Status:** Fase 2 (Auth), Fase 3 (Market Data), dan Fase 4a (Exchange Account Connection) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
+> **Status:** Fase 2 (Auth), Fase 3 (Market Data), Fase 4a (Exchange Account Connection), dan Fase 4b (Paper Trading Core) selesai — sisanya masih rancangan berdasarkan SDD §7, untuk dikonfirmasi/direvisi saat masing-masing fase implementasi berjalan. OpenAPI/Swagger otomatis dari kode belum digenerate (TBD, bisa ditambah saat modul bertambah banyak) — dokumen ini masih sumber kebenaran manual untuk sementara.
 
 Base path: `/api/v1` (versioning wajib sejak awal — NFR-MAINT-005).
 
@@ -38,6 +38,16 @@ Sumber data: Binance public REST (`BinanceMarketDataProvider`, `GET /api/v3/tick
 
 Kredensial disimpan terenkripsi AES-256-GCM (`CredentialsEncryptionService`, `backend/src/common/crypto/`) — kunci dari `CREDENTIALS_ENCRYPTION_KEY`, aplikasi menolak start tanpa variabel ini. **Konektivitas Binance sungguhan untuk endpoint ini juga belum diverifikasi di sesi ini** (alasan sama seperti Market Data — sandbox blokir egress) — logic teruji penuh lewat fake adapter ter-inject; verifikasi nyata wajib di mesin pengguna sebelum dianggap tervalidasi produksi.
 
+## Paper Trading (baru — tidak ada di SDD §7 sebagai endpoint tersendiri; SDD merancang wallet/order lewat Bot+Portfolio Service. Ditambahkan Fase 4b karena master prompt secara eksplisit mengurutkan "paper trading dengan saldo virtual" dan "order/trade simulation" SEBELUM "bot lifecycle" — mesin simulasinya harus ada & teruji dulu sebelum bot memanggilnya di Fase 5)
+| Method | Path | Fase | Status |
+|---|---|---|---|
+| GET | `/wallet` | 4b | **DONE** — dilindungi `JwtAuthGuard`. `200 {balanceUsdt, positions: [{symbol, quantity, avgEntryPrice}]}`. Wallet dibuat otomatis (lazy) dengan saldo default `PAPER_TRADING_DEFAULT_BALANCE_USDT` (10,000 USDT) saat pertama diakses — **tidak butuh koneksi exchange/API key** (SRS §3.8). |
+| POST | `/wallet/reset` | 4b | **DONE** — reset saldo ke default & hapus semua posisi. UI **wajib** menampilkan dialog konfirmasi sebelum memanggil ini (aksi ireversibel — lihat komponen `ResetBalanceModal` Fase 1). |
+| POST | `/orders` | 4b | **DONE** — `{symbol, side: "buy"\|"sell", quantity}` → **selalu** `201`, isi body membedakan hasil: `status: "filled"` (dengan objek `trade`: `executedPrice, executedQuantity, fee, executedAt`) atau `status: "rejected"` (dengan `rejectReason`: `INSUFFICIENT_BALANCE` \| `INSUFFICIENT_POSITION` \| `BELOW_MIN_NOTIONAL` \| `MARKET_DATA_UNAVAILABLE`). Symbol di luar whitelist atau quantity ≤ 0 setelah pembulatan presisi → `400` (input error, order tidak dicatat sama sekali). Setiap percobaan (termasuk yang ditolak) dicatat untuk transparansi riwayat (SRS FR-ORD-002). |
+| GET | `/orders?symbol=` | 4b | **DONE** — riwayat order milik pengguna yang login, terbaru dahulu. (Filter `status`/`from`/`to` dan `botId` masih `TODO` — akan ditambah Fase 5/7 saat relevan.) |
+
+Model eksekusi: harga dari `MarketDataService` (Fase 3) + slippage searah order (`PAPER_TRADING_SLIPPAGE_PERCENT`, default 0.05%, deterministik — bukan simulasi depth order book) + fee (`PAPER_TRADING_FEE_PERCENT`, default 0.1%). Quantity dibulatkan ke bawah sesuai `PAPER_TRADING_QUANTITY_PRECISION` (default 6 desimal, satu aturan generik untuk semua simbol — bukan LOT_SIZE per-simbol asli Binance, itu TBD). Debit saldo/posisi memakai UPDATE bersyarat (`WHERE amount >= totalCost`) di dalam transaksi database, bukan read-lalu-write terpisah — dua order bersamaan pada wallet yang sama tidak bisa berdua lolos melebihi saldo yang benar-benar tersedia. Tidak ada short selling (SELL divalidasi terhadap quantity posisi yang benar-benar dimiliki).
+
 ## Bots
 | Method | Path | Fase | Status |
 |---|---|---|---|
@@ -50,8 +60,7 @@ Kredensial disimpan terenkripsi AES-256-GCM (`CredentialsEncryptionService`, `ba
 ## Portfolio & Orders
 | Method | Path | Fase | Status |
 |---|---|---|---|
-| GET | `/portfolio` | 6 | TODO |
-| GET | `/orders?botId=&status=&from=&to=` | 7 | TODO |
+| GET | `/portfolio` | 6 | TODO — akan mengagregasi `/wallet` (Fase 4b) lintas exchange/bot; belum dibangun karena belum ada lebih dari satu sumber untuk diagregasi |
 | GET | `/reports/pnl?botId=&period=` | 6 | TODO |
 
 ## Admin

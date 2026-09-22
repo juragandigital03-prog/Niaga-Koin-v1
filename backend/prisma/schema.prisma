@@ -44,6 +44,9 @@ model User {
 
   otpChallenges    OtpChallenge[]
   exchangeAccounts ExchangeAccount[]
+  balances         Balance[]
+  positions        Position[]
+  orders           Order[]
 
   @@map("users")
 }
@@ -109,4 +112,111 @@ model ApiCredential {
   rotatedAt          DateTime        @default(now()) @map("rotated_at")
 
   @@map("api_credentials")
+}
+
+// Fase 4b: Paper Trading Core. Mengikuti pola SDD §6.2 — SATU set tabel
+// Balance/Position/Order/Trade dipakai untuk paper maupun live, dibedakan
+// oleh kolom `is_paper` (bukan tabel terpisah), agar siap dipakai Bot
+// Lifecycle (Fase 5) tanpa migrasi ulang skema.
+//
+// Penyimpangan terdokumentasi dari ERD SDD §6.1: Balance & Position di sini
+// diikat ke `userId` langsung, BUKAN ke `exchangeAccountId`/`botId` seperti
+// SDD — karena SRS §3.8 eksplisit: paper trading TIDAK memerlukan API key
+// exchange untuk mulai ("dapat memakai data pasar publik"). Mewajibkan
+// ExchangeAccount di sini akan melanggar requirement itu. `botId` akan
+// ditambahkan sebagai kolom nullable saat Bot Lifecycle (Fase 5) dibangun.
+//
+// MVP hanya mendukung wallet kas tunggal (USDT) + posisi spot per simbol —
+// tidak ada short selling (SELL divalidasi terhadap quantity posisi yang
+// benar-benar dimiliki, bukan margin).
+
+/// Saldo virtual (kas). `amount` untuk asset selain USDT belum relevan
+/// karena MVP hanya trading pair *-USDT (lihat MARKET_DATA_SUPPORTED_SYMBOLS).
+model Balance {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset     String
+  amount    Decimal  @db.Decimal(24, 8)
+  isPaper   Boolean  @default(true) @map("is_paper")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, asset, isPaper])
+  @@map("balances")
+}
+
+/// Kepemilikan aset kripto hasil BUY (dikurangi saat SELL). Selalu >= 0 —
+/// tidak ada short selling di mode spot paper trading MVP ini.
+model Position {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol        String
+  quantity      Decimal  @db.Decimal(24, 8)
+  avgEntryPrice Decimal  @map("avg_entry_price") @db.Decimal(24, 8)
+  isPaper       Boolean  @default(true) @map("is_paper")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, symbol, isPaper])
+  @@map("positions")
+}
+
+enum OrderSide {
+  buy
+  sell
+}
+
+/// Status lengkap sesuai KONTRAK BACKEND master prompt. Simulator market
+/// order paper trading MVP ini hanya pernah menghasilkan `filled` atau
+/// `rejected` (order market disetujui/ditolak secara sinkron dalam satu
+/// request-response). `pending`/`accepted`/`cancelled`/`failed` disediakan
+/// untuk order tipe lain (limit) dan alur async bot (Fase 5) — bukan belum
+/// dipakai berarti salah, ini forward-compatible by design.
+enum OrderStatus {
+  pending
+  accepted
+  rejected
+  filled
+  cancelled
+  failed
+}
+
+/// Setiap percobaan order dicatat — TERMASUK yang ditolak (saldo tidak
+/// cukup, di bawah minimum notional, data pasar tidak tersedia) — demi
+/// transparansi riwayat (SRS FR-ORD-002) dan audit (mirip semangat
+/// FR-RISK-001: penolakan tetap dicatat, tidak dibuang begitu saja).
+model Order {
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol       String
+  side         OrderSide
+  quantity     Decimal     @db.Decimal(24, 8)
+  status       OrderStatus
+  rejectReason String?     @map("reject_reason")
+  isPaper      Boolean     @default(true) @map("is_paper")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  trade Trade?
+
+  @@index([userId, symbol])
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+/// 1:1 dengan Order pada MVP ini — order market paper trading selalu fully
+/// filled atau tidak filled sama sekali (tidak ada simulasi partial fill /
+/// depth order book, ditandai TBD untuk pengembangan lanjutan).
+model Trade {
+  id               String   @id @default(uuid())
+  orderId          String   @unique @map("order_id")
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  executedPrice    Decimal  @map("executed_price") @db.Decimal(24, 8)
+  executedQuantity Decimal  @map("executed_quantity") @db.Decimal(24, 8)
+  fee              Decimal  @db.Decimal(24, 8)
+  executedAt       DateTime @default(now()) @map("executed_at")
+
+  @@map("trades")
 }

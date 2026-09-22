@@ -11,7 +11,7 @@
 | 2 | Authentication | **DONE** |
 | 3 | Market Data | **DONE** |
 | 4a | Exchange Account Connection | **DONE** |
-| 4b | Paper Trading Core | NOT STARTED |
+| 4b | Paper Trading Core | **DONE** |
 | 5 | Bot & Strategy | NOT STARTED |
 | 6 | Portfolio & Dashboard | NOT STARTED |
 | 7 | History, Notification, Admin | NOT STARTED |
@@ -73,9 +73,18 @@ Detail alasan tiap keputusan ada di `PROJECT_STATUS.md` §5.
 - **Konektivitas Binance sungguhan TIDAK dapat diverifikasi di sesi ini** (alasan sama seperti Fase 3 — sandbox blokir egress). Logic teruji lewat unit test (adapter dengan mock fetch) + e2e test (fake `ExchangeAdapter` ter-inject) + smoke test manual yang membuktikan `503` fail-safe saat Binance benar-benar tak terjangkau. Pengguna wajib verifikasi nyata di mesin sendiri.
 - Test: +19 unit test (encryption 6, Binance adapter 5, ExchangeService 7, refactor retry-helper +2) + 6 e2e test baru — total 60 unit + 17 e2e lulus di seluruh backend.
 
-## Fase 4b — Paper Trading Core (rencana)
-- Saldo virtual, tabel `orders`/`trades`/`positions`/`balances` dengan kolom `is_paper`, simulator eksekusi (fee & slippage eksplisit, ditandai TBD jika belum diputuskan), validasi saldo/quantity/precision.
-- Isolasi teknis paper vs live ditegakkan di level DB + service + API sejak awal.
+## Fase 4b — Paper Trading Core — **DONE** (2026-09-22)
+- Model Prisma baru: `Balance`, `Position`, `Order`, `Trade` — **satu set tabel untuk paper maupun live** (dibedakan kolom `is_paper`, mengikuti pola SDD §6.2), bukan tabel terpisah, agar siap dipakai Bot Lifecycle (Fase 5) tanpa migrasi ulang. Migration `paper_trading_core`.
+- **Penyimpangan terdokumentasi dari ERD SDD §6.1:** `Balance`/`Position` diikat ke `userId` langsung, bukan ke `exchangeAccountId`/`botId` seperti SDD — karena SRS §3.8 eksplisit: paper trading tidak memerlukan API key/exchange account untuk mulai. Mewajibkan `ExchangeAccount` di sini akan melanggar requirement itu sendiri. `botId` akan ditambahkan sebagai kolom nullable saat Bot Lifecycle (Fase 5) dibangun.
+- `WalletService`: wallet dibuat lazy (saldo default `PAPER_TRADING_DEFAULT_BALANCE_USDT`, 10.000 USDT) saat pertama diakses — tidak butuh registrasi/setup terpisah. `reset()` mengembalikan saldo default & menghapus semua posisi (aksi ireversibel — konfirmasi ada di sisi UI, backend menyediakan endpoint khusus sebagai bagian kontraknya).
+- `OrderService` — simulator market order: harga dari `MarketDataService` (Fase 3, **reuse langsung**, tidak duplikasi) + slippage searah order (`PAPER_TRADING_SLIPPAGE_PERCENT`, default 0.05%, **deterministik** agar test dapat direproduksi — bukan model depth order book, ditandai TBD sesuai instruksi master prompt "gunakan konfigurasi development yang terdokumentasi") + fee (`PAPER_TRADING_FEE_PERCENT`, default 0.1%). Quantity dibulatkan ke bawah ke presisi yang dikonfigurasi (meniru cara exchange membulatkan ke lot-size, bukan menolak).
+- **Setiap percobaan order dicatat** — termasuk yang ditolak (saldo tidak cukup, di bawah minimum notional, data pasar tidak tersedia) — bukan hanya error HTTP tanpa jejak, demi transparansi riwayat (SRS FR-ORD-002) dan semangat audit (mirip FR-RISK-001: penolakan tetap dicatat).
+- **Fail-safe dibuktikan nyata** (bukan cuma diklaim): saat `MarketDataService` melempar `ServiceUnavailableException` (Binance tak terjangkau — persis kondisi sandbox ini), `OrderService` menangkapnya dan mencatat order sebagai `rejected` dengan alasan `MARKET_DATA_UNAVAILABLE`, **tanpa pernah menyentuh saldo/posisi** — diverifikasi lewat smoke test manual melawan server nyata (bukan hanya mock).
+- **Keamanan konkurensi:** debit saldo (BUY) dan pengurangan posisi (SELL) memakai `updateMany` dengan kondisi `WHERE amount/quantity >= jumlah` di dalam transaksi interaktif Prisma (`$transaction(async (tx) => ...)`) — bukan pola read-lalu-write terpisah yang rentan race condition saat dua order datang bersamaan pada wallet yang sama.
+- Tidak ada short selling — SELL divalidasi terhadap quantity posisi yang benar-benar dimiliki pengguna saat itu.
+- Endpoint baru (`JwtAuthGuard`): `GET /wallet`, `POST /wallet/reset`, `POST /orders`, `GET /orders?symbol=`.
+- Isolasi teknis paper vs live ditegakkan di level DB (`is_paper`) + service + API sejak awal — konsisten dengan prinsip #10 SDD.
+- Test: 15 unit test baru (`WalletService` 4, `OrderService` 11 — termasuk assersi numerik tangan atas slippage/fee/weighted-avg-entry-price) + 8 e2e test baru (alur penuh buy→sell, race-safety saldo tak pernah negatif, isolasi antar-user, reset, unauth) — total 75 unit + 25 e2e lulus di seluruh backend. Plus smoke test manual melawan server & Postgres nyata yang membuktikan fail-safe bekerja saat market data benar-benar tak terjangkau.
 
 ## Fase 5 — Bot & Strategy (rencana)
 - Lifecycle bot (create/configure/start/pause/stop/delete), strategi indikator dasar (RSI/MACD — disebut eksplisit di SRS FR-STRAT-001), Risk Engine sebagai gate wajib sebelum eksekusi/simulasi (FR-RISK-001).
