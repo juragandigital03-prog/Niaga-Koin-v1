@@ -152,12 +152,12 @@ curl -X POST http://localhost:3000/api/v1/wallet/reset -H "Authorization: Bearer
 
 Order butuh harga dari Binance (lewat Market Data, Fase 3) — kalau `status` yang kembali adalah `"rejected"` dengan `rejectReason: "MARKET_DATA_UNAVAILABLE"`, itu berarti backend tidak bisa menjangkau Binance saat itu (fail-safe yang disengaja, saldo Anda tidak tersentuh) — cek koneksi internet Anda.
 
-## Mengelola Bot (Fase 5a)
+## Mengelola & Menjalankan Bot (Fase 5a + 5b)
 
-**Catatan:** bot di fase ini murni wadah konfigurasi + siklus hidup — belum benar-benar mengeksekusi strategi/order (itu Fase 5b).
+`parameters` RSI: `period` (2-100, default 14), `oversold` (1-49, default 30), `overbought` (51-99, default 70, harus > oversold) — rentang PROPOSED, lihat `API_CONTRACT.md`. `riskLimits.maxPositionUsdt` wajib angka positif.
 
 ```bash
-# Buat bot baru (selalu mulai berstatus "stopped")
+# Buat bot baru (selalu mulai berstatus "stopped"; parameters/riskLimits divalidasi semantik — FR-STRAT-002/FR-RISK-001)
 curl -X POST http://localhost:3000/api/v1/bots \
   -H "Authorization: Bearer <accessToken>" \
   -H "Content-Type: application/json" \
@@ -168,6 +168,10 @@ curl -X PATCH http://localhost:3000/api/v1/bots/<id>/start -H "Authorization: Be
 curl -X PATCH http://localhost:3000/api/v1/bots/<id>/pause -H "Authorization: Bearer <accessToken>"    # jeda (harus dari status active)
 curl -X PATCH http://localhost:3000/api/v1/bots/<id>/stop -H "Authorization: Bearer <accessToken>"     # hentikan
 curl -X DELETE http://localhost:3000/api/v1/bots/<id> -H "Authorization: Bearer <accessToken>"         # hapus (harus berstatus stopped, kalau tidak → 409)
+
+# Jalankan satu siklus Strategy Engine -> Risk Engine -> paper order (bot harus "active"; trigger manual saja, belum ada penjadwalan otomatis)
+curl -X POST http://localhost:3000/api/v1/bots/<id>/evaluate -H "Authorization: Bearer <accessToken>"
+# -> {"botId","signal":"buy"|"sell"|"hold","indicator","indicatorValue","executed":bool,"blockedReason":"MARKET_DATA_UNAVAILABLE"|"MAX_POSITION_EXCEEDED"|"NO_OPEN_POSITION"|null,"order"}
 ```
 
 ## Menjalankan Frontend
@@ -233,6 +237,12 @@ docker compose down -v
 | `POST /bots` mengembalikan `400` "Batas jumlah bot tercapai" | Sudah mencapai `MAX_BOTS_PER_USER` (default 10) | Hapus bot yang tidak dipakai (harus `stopped` dulu), atau naikkan `MAX_BOTS_PER_USER` di `.env` |
 | `PATCH /bots/{id}/pause` mengembalikan `400` | Bot belum berstatus `active` (mis. masih `stopped`) | `pause` hanya valid dari `active` — panggil `start` dulu |
 | `DELETE /bots/{id}` mengembalikan `409` | Bot masih `active`/`paused` | Panggil `PATCH .../stop` dulu, baru hapus |
+| `POST /bots` mengembalikan `400` "Parameter 'period'/'oversold'/'overbought' RSI harus..." | `parameters` di luar rentang valid (FR-STRAT-002) | Cek rentang di `API_CONTRACT.md` (`period` 2-100, `oversold` 1-49, `overbought` 51-99, `oversold` < `overbought`) |
+| `POST /bots` mengembalikan `400` "riskLimits.maxPositionUsdt wajib diisi..." | `riskLimits.maxPositionUsdt` kosong/0/negatif (FR-RISK-001) | Isi dengan angka USDT positif, mis. `{"maxPositionUsdt":500}` |
+| `POST /bots/{id}/evaluate` mengembalikan `400` | Bot belum berstatus `active` | Panggil `PATCH .../start` dulu |
+| `POST /bots/{id}/evaluate` mengembalikan `200` dengan `blockedReason:"MARKET_DATA_UNAVAILABLE"` | Backend tidak bisa menjangkau Binance untuk candle | Ini bukan bug — fail-safe yang sama seperti market data/paper trading. Cek `curl https://api.binance.com/api/v3/ping` |
+| `POST /bots/{id}/evaluate` mengembalikan `200` dengan `blockedReason:"MAX_POSITION_EXCEEDED"` | Posisi `userId+symbol` saat ini sudah mencapai/melebihi `riskLimits.maxPositionUsdt` bot | Ini Risk Engine bekerja sesuai desain, bukan bug — perbesar `maxPositionUsdt` atau kurangi posisi lewat `POST /orders` (sell) |
+| `POST /bots/{id}/evaluate` mengembalikan `200` dengan `blockedReason:"NO_OPEN_POSITION"` | Sinyal `sell` muncul tapi tidak ada posisi `userId+symbol` untuk ditutup | Ini bukan bug — beli dulu (manual lewat `POST /orders` atau tunggu sinyal `buy`) sebelum sinyal `sell` bisa dieksekusi |
 
 ## Struktur Proyek
 

@@ -217,5 +217,6 @@ describe('Bots (e2e)', () => {
   it('requires authentication on every bot endpoint', async () => {
     await request(app.getHttpServer()).get('/api/v1/bots').expect(401);
     await request(app.getHttpServer()).post('/api/v1/bots').send(validBotPayload).expect(401);
+    await request(app.getHttpServer()).post('/api/v1/bots/some-id/evaluate').expect(401);
   });
 });

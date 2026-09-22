@@ -14,6 +14,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RequestUser } from '../auth/strategies/jwt.strategy';
 import { BotsService } from './bots.service';
+import { BotEvaluationService } from './bot-evaluation.service';
 import { CreateBotDto } from './dto/create-bot.dto';
 
 interface AuthenticatedRequest extends Request {
@@ -23,7 +24,10 @@ interface AuthenticatedRequest extends Request {
 @Controller('bots')
 @UseGuards(JwtAuthGuard)
 export class BotsController {
-  constructor(private readonly bots: BotsService) {}
+  constructor(
+    private readonly bots: BotsService,
+    private readonly evaluation: BotEvaluationService,
+  ) {}
 
   @Post()
   create(@Req() req: AuthenticatedRequest, @Body() dto: CreateBotDto) {
@@ -62,5 +66,11 @@ export class BotsController {
   @HttpCode(204)
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     await this.bots.remove(req.user.id, id);
+  }
+
+  @Post(':id/evaluate')
+  @HttpCode(200)
+  evaluate(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.evaluation.evaluate(req.user.id, id);
   }
 }

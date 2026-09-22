@@ -1,5 +1,7 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { BotsService } from './bots.service';
+import { StrategyEngineService } from '../strategy/strategy-engine.service';
+import { RiskEngineService } from '../risk/risk-engine.service';
 
 const fakeLogger = { setContext: jest.fn(), info: jest.fn(), warn: jest.fn() } as any;
 const CONFIG: Record<string, string> = { MAX_BOTS_PER_USER: '10' };
@@ -42,7 +44,14 @@ describe('BotsService', () => {
       exchangeAccount: { findFirst: jest.fn() },
     };
     marketData = { supportedSymbols: ['BTCUSDT', 'ETHUSDT'] };
-    service = new BotsService(prisma, fakeConfig, marketData as any, fakeLogger);
+    service = new BotsService(
+      prisma,
+      fakeConfig,
+      marketData as any,
+      new StrategyEngineService(),
+      new RiskEngineService(),
+      fakeLogger,
+    );
   });
 
   describe('create', () => {
@@ -66,6 +75,22 @@ describe('BotsService', () => {
       await expect(
         service.create('user-1', { ...validDto, exchangeAccountId: 'someone-elses-account' }),
       ).rejects.toBeInstanceOf(NotFoundException);
+      expect(prisma.bot.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects RSI parameters outside the validated range (FR-STRAT-002)', async () => {
+      prisma.bot.count.mockResolvedValue(0);
+      await expect(
+        service.create('user-1', { ...validDto, parameters: { period: 1 } }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.bot.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a missing/non-positive riskLimits.maxPositionUsdt (FR-RISK-001)', async () => {
+      prisma.bot.count.mockResolvedValue(0);
+      await expect(
+        service.create('user-1', { ...validDto, riskLimits: { maxPositionUsdt: 0 } }),
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(prisma.bot.create).not.toHaveBeenCalled();
     });
 

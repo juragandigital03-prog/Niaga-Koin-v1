@@ -10,5 +10,6 @@ import { OrderService } from './order.service';
   imports: [AuthModule, MarketDataModule],
   controllers: [WalletController, OrdersController],
   providers: [WalletService, OrderService],
+  exports: [OrderService],
 })
 export class PaperTradingModule {}

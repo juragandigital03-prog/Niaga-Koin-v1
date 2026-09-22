@@ -4,6 +4,8 @@ import { Bot, Prisma, StrategyType } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarketDataService } from '../market-data/market-data.service';
+import { StrategyEngineService } from '../strategy/strategy-engine.service';
+import { RiskEngineService } from '../risk/risk-engine.service';
 import { CreateBotDto } from './dto/create-bot.dto';
 
 @Injectable()
@@ -12,6 +14,8 @@ export class BotsService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly marketData: MarketDataService,
+    private readonly strategyEngine: StrategyEngineService,
+    private readonly riskEngine: RiskEngineService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(BotsService.name);
@@ -38,6 +42,11 @@ export class BotsService {
         `Batas jumlah bot tercapai (maksimum ${this.maxBotsPerUser}). Hapus bot yang tidak dipakai atau hubungi admin.`,
       );
     }
+
+    // FR-STRAT-002 / FR-RISK-001: semantic validation, not just "is an
+    // object" (that part is already enforced by CreateBotDto).
+    this.strategyEngine.validateParameters(dto.strategyType, dto.parameters);
+    this.riskEngine.validateRiskLimits(dto.riskLimits);
 
     if (dto.exchangeAccountId) {
       const account = await this.prisma.exchangeAccount.findFirst({
